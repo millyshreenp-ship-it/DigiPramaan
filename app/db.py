@@ -1,5 +1,5 @@
 """SQLite persistence. Schema mirrors the Core Data Model in the requirements doc
-(Case / EvidenceItem / Artifact / Event) so Person 2's timeline + graph can read it directly."""
+(Case / EvidenceItem / Artifact / Event) so Timeline & Graph can read it directly."""
 import sqlite3
 from contextlib import contextmanager
 from . import config
@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS custody_log (
   seq INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, case_id TEXT, evidence_id TEXT,
   actor TEXT NOT NULL, action TEXT NOT NULL, detail TEXT, prev_hash TEXT NOT NULL, entry_hash TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS case_members (
+  case_id TEXT NOT NULL REFERENCES cases(case_id), user_id INTEGER NOT NULL REFERENCES users(user_id),
+  case_role TEXT NOT NULL, assigned_by TEXT NOT NULL, assigned_at TEXT NOT NULL,
+  PRIMARY KEY (case_id, user_id)
+);
 """
 
 def connect() -> sqlite3.Connection:
@@ -60,8 +65,29 @@ def connect() -> sqlite3.Connection:
 def init_db() -> None:
     conn = connect()
     conn.executescript(SCHEMA)
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(cases)").fetchall()]
+    for col, ctype in [("human_ref", "TEXT"), ("fir_number", "TEXT"), ("crime_category", "TEXT"),
+                       ("unit", "TEXT"), ("description", "TEXT"), ("priority", "TEXT"),
+                       ("created_by", "TEXT"), ("legal_hold", "INTEGER DEFAULT 0")]:
+        if col not in cols:
+            conn.execute(f"ALTER TABLE cases ADD COLUMN {col} {ctype}")
+    _backfill_case_members(conn)
     conn.commit()
     conn.close()
+
+def _backfill_case_members(conn):
+    import os
+    if os.environ.get("LEGACY_OPEN_ACCESS", "0") == "1": return
+    count = conn.execute("SELECT COUNT(*) FROM case_members").fetchone()[0]
+    if count == 0:
+        cases = conn.execute("SELECT case_id FROM cases").fetchall()
+        if cases:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+            users = conn.execute("SELECT user_id, username, role FROM users WHERE active=1").fetchall()
+            for c in cases:
+                for u in users:
+                    conn.execute("INSERT INTO case_members VALUES (?, ?, ?, ?, ?)", (c["case_id"], u["user_id"], u["role"], "system", now))
 
 @contextmanager
 def session():

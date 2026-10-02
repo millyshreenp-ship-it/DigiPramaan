@@ -26,6 +26,9 @@ async def lifespan(_app):
 app = FastAPI(title="IDFF Evidence Intake & Integrity", version=config.TOOL_VERSION, lifespan=lifespan,
               docs_url=None, redoc_url=None)
 STATIC = Path(__file__).resolve().parent.parent / "static"
+from app.trust import routers as trust_routers, rbac
+app.include_router(trust_routers.router)
+app.middleware("http")(rbac.case_access_middleware)
 
 WRITE_CASE = ("admin", "investigator", "supervisor")
 WRITE_EVIDENCE = ("admin", "investigator", "examiner")
@@ -164,19 +167,28 @@ def reset_password(user_id: int, new: str = Form(...), user: dict = Depends(auth
 # ================= cases =================
 @app.post("/api/cases")
 def create_case(title: str = Form(...), jurisdiction: str = Form(""), investigator: str = Form(""),
-                user: dict = Depends(auth.require(*WRITE_CASE))):
+                human_ref: str = Form(""), fir_number: str = Form(""), crime_category: str = Form(""),
+                unit: str = Form(""), description: str = Form(""), priority: str = Form(""),
+                user: dict = Depends(rbac.require_permission("case:create"))):
     if not title.strip(): raise HTTPException(400, "Case title is required.")
     case_id = "CASE-" + datetime.now().strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:4].upper()
     lead = investigator.strip() or user["full_name"] or user["username"]
     with db.session() as c:
-        c.execute("INSERT INTO cases VALUES(?,?,?,?,?,?)", (case_id, title.strip(), jurisdiction.strip(), lead, "open", _now()))
+        c.execute("INSERT INTO cases (case_id, title, jurisdiction, investigator, status, created_at, human_ref, fir_number, crime_category, unit, description, priority, created_by, legal_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                  (case_id, title.strip(), jurisdiction.strip(), lead, "open", _now(), human_ref, fir_number, crime_category, unit, description, priority, user["username"], 0))
+        c.execute("INSERT INTO case_members (case_id, user_id, case_role, assigned_by, assigned_at) VALUES (?, ?, ?, ?, ?)",
+                  (case_id, user["user_id"], "lead", "system", _now()))
         custody.append(c, actor=user["username"], action="case_created", case_id=case_id, detail={"title": title.strip()})
     return {"case_id": case_id}
 
 @app.get("/api/cases")
 def list_cases(user: dict = ANY):
+    import os
     with db.session() as c:
-        return [dict(r) for r in c.execute("SELECT * FROM cases ORDER BY created_at DESC")]
+        if os.environ.get("LEGACY_OPEN_ACCESS", "0") == "1" or user["role"] == "admin":
+            return [dict(r) for r in c.execute("SELECT * FROM cases ORDER BY created_at DESC")]
+        else:
+            return [dict(r) for r in c.execute("SELECT c.* FROM cases c JOIN case_members cm ON c.case_id = cm.case_id WHERE cm.user_id=? ORDER BY c.created_at DESC", (user["user_id"],))]
 
 # ================= acquisition =================
 @app.post("/api/cases/{case_id}/evidence")
@@ -230,6 +242,7 @@ def _verify_and_record(c, row, actor) -> dict:
 
 @app.post("/api/evidence/{evidence_id}/verify")
 def verify_one(evidence_id: str, user: dict = ANY):
+    rbac.check_evidence_access(evidence_id, user)
     with db.session() as c:
         return _verify_and_record(c, _get_ev(c, evidence_id), user["username"])
 
@@ -258,6 +271,7 @@ def manifest(case_id: str, user: dict = ANY):
 @app.get("/api/evidence/{evidence_id}/certificate", response_class=HTMLResponse)
 def certificate(evidence_id: str, user: dict = ANY):
     """Printable integrity record for one evidence item (use the browser's Print > Save as PDF)."""
+    rbac.check_evidence_access(evidence_id, user)
     with db.session() as c:
         e = _get_ev(c, evidence_id); case = _get_case(c, e["case_id"])
         live = integrity.verify(e)
@@ -298,6 +312,7 @@ def parsers(user: dict = ANY):
 @app.post("/api/evidence/{evidence_id}/parse")
 def parse_evidence(evidence_id: str, parser: str = Form(""), tz: str = Form("Asia/Kolkata"), assume_year: int | None = Form(None),
                    user: dict = Depends(auth.require(*WRITE_EVIDENCE))):
+    rbac.check_evidence_access(evidence_id, user)
     with db.session() as c:
         row = _get_ev(c, evidence_id)
         check = _verify_and_record(c, row, user["username"])    # Acquire -> Verify -> Parse gate
@@ -347,6 +362,7 @@ def parse_evidence(evidence_id: str, parser: str = Form(""), tz: str = Form("Asi
 
 @app.get("/api/evidence/{evidence_id}/artifacts")
 def artifacts(evidence_id: str, user: dict = ANY):
+    rbac.check_evidence_access(evidence_id, user)
     with db.session() as c:
         _get_ev(c, evidence_id)
         out = []
