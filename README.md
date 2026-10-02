@@ -34,6 +34,22 @@ python3 -m pytest tests -q    # 21 tests
 - In Python: `custody.append(conn, actor=, action=, case_id=, evidence_id=, detail=)` and `auth.require("role", ...)`.
 - Add a parser: subclass `BaseParser` in `app/parsers/`, implement `can_parse` and `parse`, decorate with `@register`, import it in `app/parsers/__init__.py`.
 
+
+## Person 2 — Timeline & Correlation (prototype)
+
+Three investigator-facing views built on the normalized events API:
+
+1. **Unified timeline** (`GET /api/cases/{id}/timeline`)  
+   Time-bucketed view of all parsed events across evidence sources. Optional per-source **clock-skew** offsets (`?skew=EVID-…:120,EVID-…:-30`) shift timestamps for demo/reconciliation; the UI surfaces pairs that only align after correction.
+
+2. **Evidence graph** (`GET /api/cases/{id}/graph`)  
+   Nodes: evidence, events, entities. Edges: `contains`, `mentions`, `sequential` (same source, within a time window), `same_entity`. Force-directed layout runs entirely in the browser (no CDN).
+
+3. **Investigator query** (`GET /api/cases/{id}/query`)  
+   Structured search with free text, entity/type, time range, time quality, evidence source, and multi-select event types. Facets support progressive refinement.
+
+UI tabs: **Timeline**, **Evidence graph**, **Investigator query** (alongside the existing Parsed events list).
+
 ## Deploying for real use
 1. Serve behind an HTTPS reverse proxy (nginx/Caddy) and set `FORENSIC_COOKIE_SECURE=1`. Do not expose plain HTTP on a network.
 2. Put `FORENSIC_DATA_DIR` on encrypted storage and back it up; the database and vault must be backed up together.
