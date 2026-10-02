@@ -79,6 +79,33 @@
   .authcard .btn{padding:10px}
   .err{color:var(--bad);font-size:13.5px;min-height:1.2em}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* Person 2 — Timeline & Correlation */
+  .tl-bucket{border-left:3px solid var(--steel);margin:0 0 12px 8px;padding:0 0 0 14px}
+  .tl-bucket header{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
+  .tl-bucket header .when{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+  .tl-bucket header .cnt{font-size:12px;color:var(--mute)}
+  .tl-ev{display:grid;grid-template-columns:120px 1fr;gap:4px 12px;padding:6px 0;border-bottom:1px solid #EEF2F6;font-size:13.5px}
+  .tl-ev:last-child{border-bottom:0}
+  .tl-ev .t{font-family:var(--mono);font-size:12px;color:var(--mute)}
+  .tl-ev .src{font-size:12px;color:var(--mute)}
+  .tl-lane{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .skew-box{background:#F6F8FA;border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:12px}
+  .skew-box .form{margin-top:8px}
+  .graph-canvas{position:relative;height:520px;background:#F8FAFC;border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:grab}
+  .graph-canvas:active{cursor:grabbing}
+  .graph-canvas svg{width:100%;height:100%;display:block}
+  .graph-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-top:8px}
+  .graph-legend span{display:inline-flex;align-items:center;gap:6px}
+  .graph-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .facet{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+  .facet button{background:#EEF3F8;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;cursor:pointer}
+  .facet button.on{background:var(--steel);color:#fff;border-color:var(--steel)}
+  .facet button:hover{border-color:var(--steel)}
+  .query-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+  .demo-pair{background:#FBF0D5;border:1px solid #E8D9A8;border-radius:6px;padding:10px 12px;margin:6px 0;font-size:13.5px}
+  .demo-pair .pair-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.demo-pair .pair-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -173,6 +200,79 @@
       <tbody id="evBody"></tbody></table></div>
   </section>
 
+
+  <!-- Person 2: Unified timeline -->
+  <section id="paneTimeline" hidden>
+    <h2>Unified timeline
+      <span class="grow"></span>
+      <label class="muted" style="font-weight:400;font-size:13px">Bucket
+        <select id="tlBucket"><option value="10">10 s</option><option value="60" selected>1 min</option><option value="300">5 min</option><option value="3600">1 hour</option></select>
+      </label>
+      <button class="btn line sm" id="tlRefresh">Refresh</button>
+    </h2>
+    <div class="pad">
+      <div class="skew-box">
+        <strong>Clock-skew demo</strong>
+        <span class="muted"> — shift a source’s clock (seconds; positive = source was behind real time). Applied only in this view.</span>
+        <div class="form" id="skewForm"></div>
+        <div style="margin-top:8px"><button class="btn sm" id="tlApplySkew">Apply skew</button>
+          <button class="btn line sm" id="tlClearSkew">Clear</button></div>
+        <div id="tlDemo" style="margin-top:10px"></div>
+      </div>
+      <div id="tlSources" class="muted" style="margin-bottom:10px;font-size:13px"></div>
+      <div id="tlBody"></div>
+    </div>
+  </section>
+
+  <!-- Person 2: Evidence graph -->
+  <section id="paneGraph" hidden>
+    <h2>Evidence graph
+      <span class="grow"></span>
+      <span class="muted" id="graphStats" style="font-weight:400;font-size:13px"></span>
+      <button class="btn line sm" id="graphRefresh">Refresh</button>
+    </h2>
+    <div class="pad">
+      <div class="graph-legend">
+        <span><i style="background:#244B6B"></i> Evidence</span>
+        <span><i style="background:#0B7A62"></i> Event</span>
+        <span><i style="background:#8A5A00"></i> Entity</span>
+        <span class="muted">Edges: contains · mentions · sequential · same_entity</span>
+      </div>
+      <div class="graph-canvas" id="graphCanvas" aria-label="Evidence correlation graph"></div>
+      <p class="muted" style="font-size:12.5px;margin-top:8px">Drag nodes. Scroll/pinch not required — layout is force-directed in-browser (no external libs).</p>
+    </div>
+  </section>
+
+  <!-- Person 2: Investigator query -->
+  <section id="paneQuery" hidden>
+    <h2>Investigator query
+      <span class="grow"></span>
+      <span class="muted" id="iqCount" style="font-weight:400;font-size:13px"></span>
+      <button class="btn line sm" id="iqRun">Run query</button>
+    </h2>
+    <div class="pad">
+      <div class="query-bar">
+        <label class="f">Free text<input type="search" id="iq_q" placeholder="summary, raw, source…"></label>
+        <label class="f">Entity value<input id="iq_entity" placeholder="user, IP, path…"></label>
+        <label class="f">Entity type<input id="iq_etype" placeholder="user | ip | host…"></label>
+        <label class="f">Time from (UTC)<input id="iq_from" placeholder="2024-01-15T00:00:00Z"></label>
+        <label class="f">Time to (UTC)<input id="iq_to" placeholder="2024-01-16T00:00:00Z"></label>
+        <label class="f">Time quality<select id="iq_tq"><option value="">Any</option><option value="exact">exact</option><option value="assumed_year">assumed year</option><option value="assumed_timezone">assumed timezone</option><option value="assumed_year_timezone">assumed year+tz</option></select></label>
+        <label class="f">Evidence<select id="iq_ev"><option value="">All sources</option></select></label>
+      </div>
+      <div class="muted" style="font-size:12.5px">Event types (click to toggle)</div>
+      <div class="facet" id="iqTypes"></div>
+      <div class="muted" style="font-size:12.5px">Top entities (click to filter)</div>
+      <div class="facet" id="iqEntities"></div>
+      <div class="scroll"><table><thead><tr><th>Time (UTC)</th><th>Type</th><th>Summary</th><th>Entities</th><th>Source</th><th>Quality</th></tr></thead>
+        <tbody id="iqBody"></tbody></table></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <button class="btn line sm" id="iqPrev">Previous</button>
+        <button class="btn line sm" id="iqNext">Next</button>
+      </div>
+    </div>
+  </section>
+
   <section id="paneCustody" hidden>
     <div class="toolbar"><span id="chainBadge"></span><button class="btn line sm" id="chainBtn">Re-check chain</button>
       <span class="muted">Each entry is hashed together with the one before it, so edits to history are detectable.</span></div>
@@ -263,9 +363,18 @@ $("#pw_save").onclick = async () => {
 function showTab(t) {
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
   $("#paneEvidence").style.display = t === "evidence" ? "grid" : "none";
-  $("#paneEvents").hidden = t !== "events"; $("#paneCustody").hidden = t !== "custody";
+  $("#paneEvents").hidden = t !== "events";
+  $("#paneTimeline").hidden = t !== "timeline";
+  $("#paneGraph").hidden = t !== "graph";
+  $("#paneQuery").hidden = t !== "query";
+  $("#paneCustody").hidden = t !== "custody";
   $("#paneUsers").style.display = t === "users" ? "grid" : "none";
-  if (t === "events") loadEvents(); if (t === "custody") loadCustody(); if (t === "users") loadUsers();
+  if (t === "events") loadEvents();
+  if (t === "timeline") loadTimeline();
+  if (t === "graph") loadGraph();
+  if (t === "query") loadQuery();
+  if (t === "custody") loadCustody();
+  if (t === "users") loadUsers();
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
@@ -450,7 +559,259 @@ async function resetPw(id) {
   try { await api(`/api/users/${id}/password`, { method: "POST", body: form({ new: pw }) }); toast("Password reset."); } catch (e) { toast(e.message); }
 }
 
-async function refreshAll() { await Promise.all([loadEvidence(), loadEvents(), loadCustody()]).catch(e => toast(e.message)); }
+async function refreshAll() { await Promise.all([loadEvidence(), loadEvents(), loadCustody()]).catch(e => toast(e.message)); if (!$("#paneTimeline").hidden) loadTimeline(); if (!$("#paneGraph").hidden) loadGraph(); if (!$("#paneQuery").hidden) loadQuery(); }
+
+// ================= Person 2: Timeline =================
+const LANE_COLORS = ["#244B6B","#0B7A62","#8A5A00","#5B3A8C","#B3261E","#1A6B8A","#6B5B2A"];
+let skewState = {}; // evidence_id -> seconds
+
+async function loadTimeline() {
+  if (!caseId) { $("#tlBody").innerHTML = `<p class="empty">No case selected.</p>`; return; }
+  const bucket = $("#tlBucket").value || "60";
+  const skewParts = Object.entries(skewState).filter(([,v]) => v).map(([k,v]) => k + ":" + v);
+  const qs = new URLSearchParams({ bucket_seconds: bucket, limit: "5000" });
+  if (skewParts.length) qs.set("skew", skewParts.join(","));
+  const r = await api(`/api/cases/${encodeURIComponent(caseId)}/timeline?` + qs);
+
+  // sources + skew form
+  const colorOf = {};
+  r.sources.forEach((s, i) => { colorOf[s.evidence_id] = LANE_COLORS[i % LANE_COLORS.length]; });
+  $("#tlSources").innerHTML = r.sources.length
+    ? "Sources: " + r.sources.map(s =>
+        `<span><i class="tl-lane" style="background:${colorOf[s.evidence_id]}"></i>${esc(s.filename)} (${s.event_count}` +
+        (s.skew_applied ? `, skew ${s.skew_applied}s` : "") + `)</span>`).join(" · ")
+    : "No parsed events yet.";
+  $("#skewForm").innerHTML = r.sources.map(s =>
+    `<label class="f">${esc(s.filename)}<input type="number" data-eid="${esc(s.evidence_id)}" value="${skewState[s.evidence_id] || 0}" step="1" placeholder="0"></label>`
+  ).join("") || `<span class="muted">Parse evidence first to enable skew controls.</span>`;
+
+  // clock-skew demo pairs
+  if (r.clock_skew_demo && r.clock_skew_demo.length) {
+    $("#tlDemo").innerHTML = `<strong>Pairs that align after skew</strong> (were &gt;30s apart in raw times)` +
+      r.clock_skew_demo.map(p => `<div class="demo-pair"><div class="pair-row">
+        <div><div class="muted mono">${esc((p.a.normalized_time||"").replace("T"," ").slice(0,19))} → ${esc((p.a.adjusted_time||"").replace("T"," ").slice(0,19))}</div>
+          <div>${esc(p.a.summary)}</div><div class="muted">${esc(p.a.filename)}</div></div>
+        <div><div class="muted mono">${esc((p.b.normalized_time||"").replace("T"," ").slice(0,19))} → ${esc((p.b.adjusted_time||"").replace("T"," ").slice(0,19))}</div>
+          <div>${esc(p.b.summary)}</div><div class="muted">${esc(p.b.filename)}</div></div>
+      </div><div class="muted" style="margin-top:4px">raw Δ ${p.raw_delta_seconds}s → adjusted Δ ${p.adjusted_delta_seconds}s</div></div>`).join("");
+  } else {
+    $("#tlDemo").innerHTML = Object.keys(skewState).some(k => skewState[k])
+      ? `<span class="muted">No cross-source pairs within 5s after current skew (try larger offsets or more events).</span>`
+      : `<span class="muted">Set a non-zero skew on one source, then Apply, to surface pairs that only align after correction.</span>`;
+  }
+
+  // buckets
+  if (!r.buckets.length && !r.untimed.length) {
+    $("#tlBody").innerHTML = `<p class="empty">No events. Parse evidence items to populate the timeline.</p>`;
+    return;
+  }
+  let html = r.buckets.map(b => {
+    const when = (b.start || "").replace("T", " ").replace("Z", "").slice(0, 19);
+    return `<div class="tl-bucket"><header><span class="when">${esc(when)}</span><span class="cnt">${b.count} event${b.count===1?"":"s"}</span></header>` +
+      b.events.map(e => `<div class="tl-ev">
+        <div class="t"><i class="tl-lane" style="background:${colorOf[e.evidence_id]||"#999"}"></i>${esc((e.adjusted_time||e.normalized_time||"").replace("T"," ").replace("Z","").slice(11,19))}</div>
+        <div><span class="tag">${esc(e.event_type)}</span> ${esc(e.summary)}
+          <div class="src">${esc(e.filename || e.source_ref || "")}${e.time_quality && e.time_quality !== "exact" ? ` · <span class="q-${esc(e.time_quality)}">${esc(e.time_quality.replace(/_/g," "))}</span>` : ""}</div>
+        </div></div>`).join("") + `</div>`;
+  }).join("");
+  if (r.untimed.length) {
+    html += `<div class="tl-bucket"><header><span class="when">No usable timestamp</span><span class="cnt">${r.untimed.length}</span></header>` +
+      r.untimed.map(e => `<div class="tl-ev"><div class="t">—</div><div><span class="tag">${esc(e.event_type)}</span> ${esc(e.summary)}
+        <div class="src">${esc(e.filename||"")}</div></div></div>`).join("") + `</div>`;
+  }
+  $("#tlBody").innerHTML = html;
+}
+$("#tlRefresh").onclick = loadTimeline;
+$("#tlBucket").onchange = loadTimeline;
+$("#tlApplySkew").onclick = () => {
+  skewState = {};
+  $("#skewForm").querySelectorAll("input[data-eid]").forEach(inp => {
+    const v = parseFloat(inp.value);
+    if (v) skewState[inp.dataset.eid] = v;
+  });
+  loadTimeline();
+};
+$("#tlClearSkew").onclick = () => { skewState = {}; loadTimeline(); };
+
+// ================= Person 2: Evidence graph =================
+async function loadGraph() {
+  if (!caseId) { $("#graphCanvas").innerHTML = ""; $("#graphStats").textContent = ""; return; }
+  const r = await api(`/api/cases/${encodeURIComponent(caseId)}/graph?max_events=400`);
+  const st = r.stats || {};
+  $("#graphStats").textContent = `${(st.node_counts&&st.node_counts.evidence)||0} evidence · ${(st.node_counts&&st.node_counts.event)||0} events · ${(st.node_counts&&st.node_counts.entity)||0} entities` +
+    (st.truncated ? ` (showing ${st.events_included}/${st.events_total})` : "");
+  renderGraph(r.nodes || [], r.edges || []);
+}
+$("#graphRefresh").onclick = loadGraph;
+
+function renderGraph(nodes, edges) {
+  const canvas = $("#graphCanvas");
+  const W = canvas.clientWidth || 900, H = 520;
+  // simple force layout (no deps)
+  const pos = {};
+  const typeColor = { evidence: "#244B6B", event: "#0B7A62", entity: "#8A5A00" };
+  const typeR = { evidence: 14, event: 8, entity: 7 };
+  nodes.forEach((n, i) => {
+    const angle = (i / Math.max(nodes.length, 1)) * Math.PI * 2;
+    const rad = n.type === "evidence" ? 80 : n.type === "entity" ? 200 : 140;
+    pos[n.id] = { x: W/2 + Math.cos(angle)*rad + (Math.random()-0.5)*40, y: H/2 + Math.sin(angle)*rad + (Math.random()-0.5)*40, vx:0, vy:0 };
+  });
+  const edgeTypeStroke = { contains: "#9FB1C1", mentions: "#C5B48A", sequential: "#7A9E8E", same_entity: "#C9A0A0" };
+  // iterate forces
+  for (let iter = 0; iter < 120; iter++) {
+    // repulsion
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        let dx = pos[a.id].x - pos[b.id].x, dy = pos[a.id].y - pos[b.id].y;
+        let dist = Math.sqrt(dx*dx+dy*dy) || 1;
+        const f = 800 / (dist*dist);
+        pos[a.id].vx += (dx/dist)*f; pos[a.id].vy += (dy/dist)*f;
+        pos[b.id].vx -= (dx/dist)*f; pos[b.id].vy -= (dy/dist)*f;
+      }
+    }
+    // attraction along edges
+    edges.forEach(e => {
+      if (!pos[e.source] || !pos[e.target]) return;
+      let dx = pos[e.target].x - pos[e.source].x, dy = pos[e.target].y - pos[e.source].y;
+      let dist = Math.sqrt(dx*dx+dy*dy) || 1;
+      const ideal = e.type === "contains" ? 60 : e.type === "sequential" ? 50 : 90;
+      const f = (dist - ideal) * 0.05;
+      pos[e.source].vx += (dx/dist)*f; pos[e.source].vy += (dy/dist)*f;
+      pos[e.target].vx -= (dx/dist)*f; pos[e.target].vy -= (dy/dist)*f;
+    });
+    // center gravity + damp
+    nodes.forEach(n => {
+      const p = pos[n.id];
+      p.vx += (W/2 - p.x) * 0.01; p.vy += (H/2 - p.y) * 0.01;
+      p.vx *= 0.75; p.vy *= 0.75;
+      p.x = Math.max(20, Math.min(W-20, p.x + p.vx));
+      p.y = Math.max(20, Math.min(H-20, p.y + p.vy));
+    });
+  }
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  edges.forEach(e => {
+    if (!pos[e.source] || !pos[e.target]) return;
+    const a = pos[e.source], b = pos[e.target];
+    svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${edgeTypeStroke[e.type]||"#ccc"}" stroke-width="${e.type==="contains"?1.5:1}" opacity="0.7"/>`;
+  });
+  nodes.forEach(n => {
+    const p = pos[n.id];
+    const r = typeR[n.type] || 6;
+    const c = typeColor[n.type] || "#666";
+    const label = (n.label || n.id).slice(0, 28);
+    svg += `<g class="gnode" data-id="${esc(n.id)}" transform="translate(${p.x},${p.y})" style="cursor:pointer">
+      <circle r="${r}" fill="${c}" stroke="#fff" stroke-width="1.5"/>
+      <title>${esc(n.type)}: ${esc(n.label||n.id)}</title>
+      <text y="${r+11}" text-anchor="middle" font-size="10" fill="#5B6B79" font-family="system-ui,sans-serif">${esc(label)}</text>
+    </g>`;
+  });
+  svg += `</svg>`;
+  canvas.innerHTML = svg;
+
+  // drag nodes
+  let drag = null, ox=0, oy=0;
+  canvas.onpointerdown = ev => {
+    const g = ev.target.closest(".gnode");
+    if (!g) return;
+    drag = g; const id = g.dataset.id;
+    const pt = pos[id]; if (!pt) return;
+    ox = ev.clientX - pt.x; oy = ev.clientY - pt.y;
+    canvas.setPointerCapture(ev.pointerId);
+  };
+  canvas.onpointermove = ev => {
+    if (!drag) return;
+    const id = drag.dataset.id; const pt = pos[id]; if (!pt) return;
+    pt.x = Math.max(20, Math.min(W-20, ev.clientX - ox));
+    pt.y = Math.max(20, Math.min(H-20, ev.clientY - oy));
+    // re-render lines cheaply: full redraw is fine for prototype
+    renderGraphPositions(nodes, edges, pos, W, H, canvas, typeColor, typeR, edgeTypeStroke);
+    drag = canvas.querySelector(`.gnode[data-id="${CSS.escape(id)}"]`);
+  };
+  canvas.onpointerup = () => { drag = null; };
+}
+
+function renderGraphPositions(nodes, edges, pos, W, H, canvas, typeColor, typeR, edgeTypeStroke) {
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  edges.forEach(e => {
+    if (!pos[e.source] || !pos[e.target]) return;
+    const a = pos[e.source], b = pos[e.target];
+    svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${edgeTypeStroke[e.type]||"#ccc"}" stroke-width="${e.type==="contains"?1.5:1}" opacity="0.7"/>`;
+  });
+  nodes.forEach(n => {
+    const p = pos[n.id];
+    const r = typeR[n.type] || 6;
+    const c = typeColor[n.type] || "#666";
+    const label = (n.label || n.id).slice(0, 28);
+    svg += `<g class="gnode" data-id="${esc(n.id)}" transform="translate(${p.x},${p.y})" style="cursor:pointer">
+      <circle r="${r}" fill="${c}" stroke="#fff" stroke-width="1.5"/>
+      <title>${esc(n.type)}: ${esc(n.label||n.id)}</title>
+      <text y="${r+11}" text-anchor="middle" font-size="10" fill="#5B6B79" font-family="system-ui,sans-serif">${esc(label)}</text>
+    </g>`;
+  });
+  svg += `</svg>`;
+  canvas.innerHTML = svg;
+}
+
+// ================= Person 2: Investigator query =================
+let iqPage = 0, IQ_PAGE = 100, iqSelectedTypes = new Set();
+
+async function loadQuery() {
+  if (!caseId) { $("#iqBody").innerHTML = `<tr><td colspan="6" class="empty">No case selected.</td></tr>`; return; }
+  const qs = new URLSearchParams({
+    q: $("#iq_q").value, entity: $("#iq_entity").value, entity_type: $("#iq_etype").value,
+    time_from: $("#iq_from").value, time_to: $("#iq_to").value, time_quality: $("#iq_tq").value,
+    evidence_id: $("#iq_ev").value, limit: String(IQ_PAGE), offset: String(iqPage * IQ_PAGE),
+  });
+  if (iqSelectedTypes.size) qs.set("event_type", [...iqSelectedTypes].join(","));
+  const r = await api(`/api/cases/${encodeURIComponent(caseId)}/query?` + qs);
+  const from = r.total ? iqPage * IQ_PAGE + 1 : 0;
+  $("#iqCount").textContent = `${from}–${iqPage * IQ_PAGE + r.events.length} of ${r.total}`;
+  $("#iqPrev").disabled = iqPage === 0;
+  $("#iqNext").disabled = (iqPage + 1) * IQ_PAGE >= r.total;
+
+  // facets
+  const curEv = $("#iq_ev").value;
+  $("#iq_ev").innerHTML = `<option value="">All sources</option>` +
+    (r.facets.evidence || []).map(e => `<option value="${esc(e.value)}">${esc(e.label)} (${e.count})</option>`).join("");
+  $("#iq_ev").value = curEv;
+
+  $("#iqTypes").innerHTML = (r.facets.event_types || []).map(t =>
+    `<button type="button" class="${iqSelectedTypes.has(t.value)?"on":""}" data-t="${esc(t.value)}">${esc(t.value)} (${t.count})</button>`
+  ).join("") || `<span class="muted">No event types yet.</span>`;
+  $("#iqTypes").querySelectorAll("button").forEach(b => b.onclick = () => {
+    if (iqSelectedTypes.has(b.dataset.t)) iqSelectedTypes.delete(b.dataset.t); else iqSelectedTypes.add(b.dataset.t);
+    iqPage = 0; loadQuery();
+  });
+
+  $("#iqEntities").innerHTML = (r.facets.entities || []).slice(0, 20).map(e =>
+    `<button type="button" data-v="${esc(e.value)}" data-et="${esc(e.entity_type)}">${esc(e.entity_type)}:${esc(e.value)} (${e.count})</button>`
+  ).join("") || `<span class="muted">No entities extracted yet.</span>`;
+  $("#iqEntities").querySelectorAll("button").forEach(b => b.onclick = () => {
+    $("#iq_entity").value = b.dataset.v; $("#iq_etype").value = b.dataset.et; iqPage = 0; loadQuery();
+  });
+
+  $("#iqBody").innerHTML = r.events.length ? r.events.map(e => {
+    const ents = (e.entities || []).map(x => typeof x === "object" ? (x.value || x.name || "") : x).filter(Boolean).slice(0, 4).join(", ");
+    return `<tr>
+      <td class="mono">${esc((e.normalized_time||"").replace("T"," ").replace("Z",""))}</td>
+      <td><span class="tag">${esc(e.event_type)}</span></td>
+      <td>${esc(e.summary)}</td>
+      <td class="muted">${esc(ents)}</td>
+      <td class="muted" title="${esc(e.evidence_id)}">${esc(e.source_ref)}</td>
+      <td class="q-${esc(e.time_quality||"")}">${esc((e.time_quality||"").replace(/_/g," "))}</td></tr>`;
+  }).join("") : `<tr><td colspan="6" class="empty">No matching events.</td></tr>`;
+}
+$("#iqRun").onclick = () => { iqPage = 0; loadQuery(); };
+$("#iqPrev").onclick = () => { iqPage = Math.max(0, iqPage - 1); loadQuery(); };
+$("#iqNext").onclick = () => { iqPage++; loadQuery(); };
+let iqt; ["#iq_q","#iq_entity","#iq_etype","#iq_from","#iq_to"].forEach(sel => {
+  const el = $(sel); if (el) el.oninput = () => { clearTimeout(iqt); iqt = setTimeout(() => { iqPage = 0; loadQuery(); }, 300); };
+});
+["#iq_tq","#iq_ev"].forEach(sel => { const el = $(sel); if (el) el.onchange = () => { iqPage = 0; loadQuery(); }; });
+
+
 boot();
 </script>
 </body>
