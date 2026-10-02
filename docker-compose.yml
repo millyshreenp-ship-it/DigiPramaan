@@ -1,0 +1,11 @@
+services:
+  intake:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]      # bind to localhost; put an HTTPS reverse proxy in front for network access
+    volumes: ["idff-data:/data"]         # evidence vault + database persist here
+    environment:
+      FORENSIC_COOKIE_SECURE: "0"        # set to "1" once served over HTTPS
+      FORENSIC_MAX_UPLOAD_BYTES: "10737418240"
+    restart: unless-stopped
+volumes:
+  idff-data:

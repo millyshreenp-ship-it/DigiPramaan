@@ -1,0 +1,12 @@
+Mar 14 22:00:12 fin-ws-07 CRON[2211]: (root) CMD (/usr/local/bin/nightly_backup.sh)
+Mar 14 22:03:40 fin-ws-07 sshd[2290]: Failed password for invalid user admin from 203.0.113.45 port 51122 ssh2
+Mar 14 22:03:44 fin-ws-07 sshd[2290]: Failed password for invalid user admin from 203.0.113.45 port 51122 ssh2
+Mar 14 22:09:02 fin-ws-07 sshd[2344]: Accepted password for rahul from 10.20.1.15 port 49821 ssh2
+Mar 14 22:09:03 fin-ws-07 sshd[2344]: pam_unix(sshd:session): session opened for user rahul by (uid=0)
+Mar 14 22:28:51 fin-ws-07 kernel: [ 8123.1] usb 1-1: New USB device found, idVendor=0781, idProduct=5567
+Mar 14 22:28:51 fin-ws-07 kernel: [ 8123.2] usb 1-1: Product: Cruzer Blade
+Mar 14 22:28:51 fin-ws-07 kernel: [ 8123.3] usb 1-1: SerialNumber: 4C530001230917115371
+Mar 14 22:28:53 fin-ws-07 kernel: [ 8125.0] sd 6:0:0:0: [sdb] Attached SCSI removable disk
+Mar 14 22:31:05 fin-ws-07 sudo:    rahul : TTY=pts/0 ; PWD=/home/rahul ; USER=root ; COMMAND=/bin/cp /srv/finance/Q4_payroll.xlsx /media/usb/
+Mar 14 22:33:20 fin-ws-07 sshd[2344]: pam_unix(sshd:session): session closed for user rahul
+this line is deliberately malformed to demonstrate skipped-line reporting

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence Intake &amp; Integrity</title>
+<style>
+  /* Offline by design: system fonts only, no CDN, no remote requests. */
+  :root{--bench:#E9EDF1;--paper:#fff;--ink:#16212B;--mute:#5B6B79;--line:#CFD7DF;--steel:#244B6B;--steel-d:#183650;
+    --ok:#0B7A62;--ok-bg:#DDF2EC;--bad:#B3261E;--bad-bg:#FBE4E1;--warn:#8A5A00;--warn-bg:#FBF0D5;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bench);color:var(--ink);font:15px/1.5 var(--sans)}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid #6FA8DC;outline-offset:2px}
+  [hidden]{display:none!important}
+  header{background:var(--steel-d);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  header h1{font-size:18px;font-weight:650;margin:0} header .sub{color:#B7C7D6;font-size:13px}
+  header .spacer{flex:1}
+  header select,header button{background:#fff;color:var(--ink);border:0;border-radius:6px;padding:7px 10px;cursor:pointer}
+  header button.ghost{background:transparent;color:#fff;border:1px solid #5F7B93}
+  header label{color:#B7C7D6;display:grid;gap:2px;font-size:12px}
+  .me{color:#fff;font-size:13px;text-align:right;line-height:1.3} .me small{color:#B7C7D6}
+  nav{background:#fff;border-bottom:1px solid var(--line);padding:0 24px;display:flex;gap:2px;flex-wrap:wrap}
+  .tab{background:none;border:0;padding:12px 16px;cursor:pointer;border-bottom:3px solid transparent;color:var(--mute);font-weight:600}
+  .tab[aria-selected=true]{color:var(--steel-d);border-bottom-color:var(--steel)}
+  main{max-width:1240px;margin:0 auto;padding:20px 24px 60px;display:grid;gap:18px}
+  section{background:var(--paper);border:1px solid var(--line);border-radius:8px}
+  section>h2{margin:0;padding:12px 18px;font-size:15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  section>h2 .grow{flex:1}
+  .pad{padding:16px 18px}
+  .btn{background:var(--steel);color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer}
+  .btn:hover{background:var(--steel-d)} .btn:disabled{opacity:.5;cursor:default}
+  .btn.line{background:#fff;color:var(--steel);border:1px solid var(--steel)} .btn.line:hover{background:#EEF3F8}
+  .btn.sm{padding:4px 9px;font-size:13px}
+  .drop{border:2px dashed #9FB1C1;border-radius:8px;padding:26px;text-align:center;color:var(--mute);cursor:pointer;background:#F6F8FA}
+  .drop.over{background:#E3EEF8;border-color:var(--steel)} .drop strong{color:var(--ink)}
+  .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+  label.f{display:grid;gap:3px;font-size:13px;color:var(--mute)}
+  input,select,textarea{border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:#fff}
+  .wide{grid-column:1/-1}
+  .progress{height:6px;background:#DDE5EC;border-radius:3px;overflow:hidden;margin-top:12px;display:none}
+  .progress i{display:block;height:100%;width:0;background:var(--steel)}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600}
+  .badge::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+  .badge.VERIFIED{background:var(--ok-bg);color:var(--ok)} .badge.TAMPERED,.badge.MISSING{background:var(--bad-bg);color:var(--bad)}
+  .badge.off{background:#E3E8ED;color:var(--mute)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-weight:600;color:var(--mute);padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 12px;border-bottom:1px solid #E6EBF0;vertical-align:top} tr:last-child td{border-bottom:0}
+  .scroll{overflow-x:auto}
+  .mono{font-family:var(--mono);font-size:12.5px}
+  .hash{font-family:var(--mono);font-size:12.5px;word-break:break-all;line-height:1.7}
+  .hash .g{margin-right:6px;display:inline-block}
+  .hash mark{background:var(--bad-bg);color:var(--bad);font-weight:700;border-radius:2px;padding:0 1px}
+  .muted{color:var(--mute)}
+  .ev{border-bottom:1px solid var(--line);padding:14px 18px;display:grid;gap:10px} .ev:last-child{border-bottom:0}
+  .ev-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .ev-top .name{font-weight:650} .ev-top .id{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+  .ev-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ev-actions select,.ev-actions input{padding:4px 7px;font-size:13px}
+  .ev-actions label{display:inline-flex;gap:4px;align-items:center;font-size:13px}
+  .kv{display:grid;grid-template-columns:110px 1fr;gap:2px 12px;font-size:13.5px} .kv dt{color:var(--mute)} .kv dd{margin:0}
+  .callout{border-radius:6px;padding:10px 12px;font-size:13.5px}
+  .callout.bad{background:var(--bad-bg);border:1px solid #E7B3AE}
+  .callout.warn{background:var(--warn-bg);border:1px solid #E6CF98;color:#4A3200}
+  .callout.ok{background:var(--ok-bg);border:1px solid #AAD8CB}
+  .callout ul{margin:6px 0 0;padding-left:18px}
+  .toolbar{display:flex;gap:10px;padding:12px 18px;flex-wrap:wrap;align-items:center}
+  .toolbar input[type=search]{min-width:240px}
+  .q-exact{color:var(--ok)} .q-assumed_tz,.q-assumed_year_tz{color:var(--warn)}
+  .tag{font-family:var(--mono);font-size:12px;background:#EDF1F5;border-radius:4px;padding:1px 6px}
+  .empty{padding:28px;text-align:center;color:var(--mute)}
+  #toast{position:fixed;right:20px;bottom:20px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:6px;display:none;max-width:440px;z-index:9}
+  /* auth screen */
+  #authView{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--steel-d)}
+  .authcard{background:#fff;border-radius:10px;padding:28px;width:100%;max-width:400px;display:grid;gap:14px}
+  .authcard h1{font-size:20px;margin:0} .authcard p{margin:0;color:var(--mute);font-size:14px}
+  .authcard .btn{padding:10px}
+  .err{color:var(--bad);font-size:13.5px;min-height:1.2em}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="authView" hidden>
+  <form class="authcard" id="authForm" autocomplete="on">
+    <h1 id="authTitle">Sign in</h1>
+    <p id="authHelp">Evidence Intake &amp; Integrity. Every action is attributed to you in the chain of custody.</p>
+    <label class="f">Username<input id="a_user" name="username" autocomplete="username" required></label>
+    <label class="f" id="a_nameRow" hidden>Full name<input id="a_name" autocomplete="name"></label>
+    <label class="f">Password<input id="a_pass" name="password" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="authErr" role="alert"></div>
+    <button class="btn" id="authBtn">Sign in</button>
+  </form>
+</div>
+
+<div id="appView" hidden>
+<header>
+  <div><h1>Evidence Intake &amp; Integrity</h1><div class="sub">Acquire, hash, verify, parse. Runs entirely on this machine.</div></div>
+  <span class="spacer"></span>
+  <label>Case<select id="caseSel" aria-label="Active case"></select></label>
+  <button class="ghost" id="newCaseBtn" hidden>New case</button>
+  <div class="me"><div id="meName"></div><small id="meRole"></small></div>
+  <button class="ghost" id="pwBtn">Change password</button>
+  <button class="ghost" id="logoutBtn">Sign out</button>
+</header>
+<nav role="tablist">
+  <button class="tab" role="tab" data-tab="evidence" aria-selected="true">Evidence</button>
+  <button class="tab" role="tab" data-tab="events" aria-selected="false">Parsed events</button>
+  <button class="tab" role="tab" data-tab="custody" aria-selected="false">Chain of custody</button>
+  <button class="tab" role="tab" data-tab="users" aria-selected="false" id="usersTab" hidden>Users</button>
+</nav>
+
+<main>
+  <section id="newCase" hidden>
+    <h2>Open a new case</h2>
+    <div class="pad form">
+      <label class="f">Case title<input id="nc_title" placeholder="e.g. Payroll file exfiltration, Finance WS-07"></label>
+      <label class="f">Jurisdiction<input id="nc_jur" placeholder="e.g. Haryana Police Cyber Cell"></label>
+      <label class="f">Lead investigator (defaults to you)<input id="nc_inv"></label>
+      <div class="wide"><button class="btn" id="nc_save">Create case</button></div>
+    </div>
+  </section>
+
+  <section id="pwBox" hidden>
+    <h2>Change your password</h2>
+    <div class="pad form">
+      <label class="f">Current password<input id="pw_cur" type="password" autocomplete="current-password"></label>
+      <label class="f">New password (10+ characters)<input id="pw_new" type="password" autocomplete="new-password"></label>
+      <div class="wide"><button class="btn" id="pw_save">Save password</button></div>
+    </div>
+  </section>
+
+  <div id="paneEvidence" style="display:grid;gap:18px">
+    <section id="addBox">
+      <h2>Add evidence</h2>
+      <div class="pad">
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose evidence files">
+          <div id="dropText"><strong>Drop evidence files here</strong>, or click to choose.<br>
+          <span class="muted">Any file type is preserved and hashed. Logs, web access logs and filesystem body files can also be parsed.</span></div>
+          <input type="file" id="file" multiple hidden>
+        </div>
+        <div class="form" id="metaForm" hidden>
+          <label class="f">Source type
+            <select id="m_type"><option>log</option><option>disk image</option><option>filesystem metadata</option><option>mobile extraction</option><option>network capture</option><option>cloud export</option><option>document</option><option>other</option></select></label>
+          <label class="f">Acquisition method<input id="m_method" value="file upload"></label>
+          <label class="f">Custodian<input id="m_cust" placeholder="Who handed this over?"></label>
+          <label class="f" id="m_hashRow">Hash declared by acquirer (optional)<input id="m_hash" class="mono" placeholder="SHA-256 from the acquisition report"></label>
+          <label class="f wide">Notes<textarea id="m_notes" rows="2" placeholder="Where it came from, device clock settings, anything a court may ask later"></textarea></label>
+          <div class="wide"><button class="btn" id="acquire">Preserve and hash</button> <span class="muted" id="fileInfo"></span></div>
+        </div>
+        <div class="progress" id="prog"><i></i></div>
+      </div>
+    </section>
+    <section>
+      <h2><span class="grow">Evidence in this case</span>
+        <button class="btn line sm" id="verifyAll">Verify all</button>
+        <button class="btn line sm" id="manifestBtn">Download manifest</button></h2>
+      <div id="evList"><div class="empty">Select or create a case to begin.</div></div>
+    </section>
+  </div>
+
+  <section id="paneEvents" hidden>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search events" aria-label="Search events">
+      <select id="typeSel" aria-label="Event type"><option value="">All event types</option></select>
+      <span class="muted" id="evCount"></span><span style="flex:1"></span>
+      <button class="btn line sm" id="prevPg">Previous</button><button class="btn line sm" id="nextPg">Next</button>
+      <button class="btn line sm" id="csvBtn">Export CSV</button>
+    </div>
+    <div class="scroll"><table><thead><tr><th>Time (UTC)</th><th>As written in source</th><th>Time basis</th><th>Type</th><th>Summary</th><th>Source</th></tr></thead>
+      <tbody id="evBody"></tbody></table></div>
+  </section>
+
+  <section id="paneCustody" hidden>
+    <div class="toolbar"><span id="chainBadge"></span><button class="btn line sm" id="chainBtn">Re-check chain</button>
+      <span class="muted">Each entry is hashed together with the one before it, so edits to history are detectable.</span></div>
+    <div class="scroll"><table><thead><tr><th>#</th><th>When (UTC)</th><th>Who</th><th>Action</th><th>Detail</th><th>Entry hash</th></tr></thead><tbody id="cuBody"></tbody></table></div>
+  </section>
+
+  <div id="paneUsers" style="display:none;gap:18px">
+    <section>
+      <h2>Add a user</h2>
+      <div class="pad form">
+        <label class="f">Username<input id="u_name"></label>
+        <label class="f">Full name<input id="u_full"></label>
+        <label class="f">Role<select id="u_role"><option>investigator</option><option>examiner</option><option>supervisor</option><option>reviewer</option><option>auditor</option><option>admin</option></select></label>
+        <label class="f">Temporary password (10+ characters)<input id="u_pw" type="password" autocomplete="new-password"></label>
+        <div class="wide"><button class="btn" id="u_add">Create user</button>
+          <span class="muted">Investigator and admin can open cases and add evidence. Examiner can add evidence. Supervisor can open cases. Reviewer and auditor are read-only.</span></div>
+      </div>
+    </section>
+    <section><h2>Accounts</h2><div class="scroll"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody id="userBody"></tbody></table></div></section>
+  </div>
+</main>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const WRITE_EVIDENCE = ["admin","investigator","examiner"], WRITE_CASE = ["admin","investigator","supervisor"];
+let me = null, caseId = null, picked = [], parsers = [], lastVerify = {}, lastParse = {}, page = 0, PAGE = 200, authMode = "login";
+
+const toast = m => { const t = $("#toast"); t.textContent = m; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 5000); };
+async function api(path, opts = {}) {
+  opts.headers = { "X-Requested-With": "idff", ...(opts.headers || {}) };
+  const r = await fetch(path, opts);
+  const body = await r.json().catch(() => ({}));
+  if (r.status === 401 && me && !path.startsWith("/api/auth/login")) { me = null; showAuth(); throw new Error(body.detail || "Signed out"); }
+  if (!r.ok) throw new Error(typeof body.detail === "string" ? body.detail : "Request failed (" + r.status + ")");
+  return body;
+}
+const form = o => { const f = new FormData(); Object.entries(o).forEach(([k, v]) => f.append(k, v)); return f; };
+const can = list => me && list.includes(me.role);
+const fmtSize = n => n < 1024 ? n + " B" : n < 1048576 ? (n/1024).toFixed(1) + " KB" : n < 1073741824 ? (n/1048576).toFixed(1) + " MB" : (n/1073741824).toFixed(2) + " GB";
+const groups = h => h.match(/.{1,8}/g).map(g => `<span class="g">${g}</span>`).join("");
+function hashDiff(exp, act) {
+  if (!act) return groups(exp);
+  return act.split("").map((c, i) => c === exp[i] ? c : `<mark>${c}</mark>`).join("").replace(/((?:<mark>.<\/mark>|.){8})/g, '<span class="g">$1</span>');
+}
+
+// ================= auth =================
+async function boot() {
+  const st = await fetch("/api/auth/status").then(r => r.json());
+  authMode = st.needs_setup ? "setup" : "login";
+  try { me = await api("/api/auth/me"); enterApp(); } catch { showAuth(); }
+}
+function showAuth() {
+  $("#appView").hidden = true; $("#authView").hidden = false;
+  const setup = authMode === "setup";
+  $("#authTitle").textContent = setup ? "Create the administrator account" : "Sign in";
+  $("#authHelp").textContent = setup ? "First run. This account manages users and cannot be recovered without database access, so store the password safely."
+                                     : "Evidence Intake & Integrity. Every action is attributed to you in the chain of custody.";
+  $("#a_nameRow").hidden = !setup; $("#authBtn").textContent = setup ? "Create account and sign in" : "Sign in";
+  $("#a_pass").autocomplete = setup ? "new-password" : "current-password"; $("#a_pass").value = "";
+}
+$("#authForm").onsubmit = async e => {
+  e.preventDefault(); $("#authErr").textContent = ""; $("#authBtn").disabled = true;
+  try {
+    if (authMode === "setup") await api("/api/auth/setup", { method: "POST", body: form({ username: $("#a_user").value, full_name: $("#a_name").value, password: $("#a_pass").value }) });
+    else await api("/api/auth/login", { method: "POST", body: form({ username: $("#a_user").value, password: $("#a_pass").value }) });
+    me = await api("/api/auth/me"); authMode = "login"; enterApp();
+  } catch (err) { $("#authErr").textContent = err.message; }
+  $("#authBtn").disabled = false;
+};
+async function enterApp() {
+  $("#authView").hidden = true; $("#appView").hidden = false;
+  $("#meName").textContent = me.full_name || me.username; $("#meRole").textContent = me.role;
+  $("#newCaseBtn").hidden = !can(WRITE_CASE); $("#usersTab").hidden = me.role !== "admin";
+  $("#addBox").hidden = !can(WRITE_EVIDENCE);
+  parsers = await api("/api/parsers"); showTab("evidence"); await loadCases();
+}
+$("#logoutBtn").onclick = async () => { try { await api("/api/auth/logout", { method: "POST" }); } catch {} me = null; lastVerify = {}; lastParse = {}; showAuth(); };
+$("#pwBtn").onclick = () => { $("#pwBox").hidden = !$("#pwBox").hidden; };
+$("#pw_save").onclick = async () => {
+  try { await api("/api/auth/password", { method: "POST", body: form({ current: $("#pw_cur").value, new: $("#pw_new").value }) });
+    toast("Password changed."); $("#pwBox").hidden = true; $("#pw_cur").value = $("#pw_new").value = ""; } catch (e) { toast(e.message); }
+};
+
+// ================= tabs =================
+function showTab(t) {
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
+  $("#paneEvidence").style.display = t === "evidence" ? "grid" : "none";
+  $("#paneEvents").hidden = t !== "events"; $("#paneCustody").hidden = t !== "custody";
+  $("#paneUsers").style.display = t === "users" ? "grid" : "none";
+  if (t === "events") loadEvents(); if (t === "custody") loadCustody(); if (t === "users") loadUsers();
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+// ================= cases =================
+async function loadCases(select) {
+  const cs = await api("/api/cases");
+  $("#caseSel").innerHTML = cs.length ? cs.map(c => `<option value="${esc(c.case_id)}">${esc(c.case_id)}: ${esc(c.title)}</option>`).join("") : `<option value="">No cases yet</option>`;
+  if (select) $("#caseSel").value = select; else if (caseId && cs.some(c => c.case_id === caseId)) $("#caseSel").value = caseId;
+  caseId = $("#caseSel").value || null;
+  if (!cs.length && can(WRITE_CASE)) $("#newCase").hidden = false;
+  page = 0; refreshAll();
+}
+$("#caseSel").onchange = () => { caseId = $("#caseSel").value; lastVerify = {}; lastParse = {}; page = 0; refreshAll(); };
+$("#newCaseBtn").onclick = () => { $("#newCase").hidden = !$("#newCase").hidden; };
+$("#nc_save").onclick = async () => {
+  try { const r = await api("/api/cases", { method: "POST", body: form({ title: $("#nc_title").value, jurisdiction: $("#nc_jur").value, investigator: $("#nc_inv").value }) });
+    $("#newCase").hidden = true; ["#nc_title","#nc_jur","#nc_inv"].forEach(s => $(s).value = ""); toast("Case " + r.case_id + " created."); loadCases(r.case_id); }
+  catch (e) { toast(e.message); }
+};
+
+// ================= upload =================
+const drop = $("#drop"), fileIn = $("#file");
+drop.onclick = () => fileIn.click();
+drop.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileIn.click(); } };
+["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => pick([...e.dataTransfer.files]));
+fileIn.onchange = () => pick([...fileIn.files]);
+function pick(files) {
+  if (!files.length) return; picked = files;
+  $("#dropText").innerHTML = files.length === 1 ? `<strong>${esc(files[0].name)}</strong> <span class="muted">(${fmtSize(files[0].size)})</span>`
+    : `<strong>${files.length} files selected</strong> <span class="muted">(${fmtSize(files.reduce((a, f) => a + f.size, 0))} total)</span>`;
+  $("#m_hashRow").hidden = files.length > 1; $("#metaForm").hidden = false; $("#fileInfo").textContent = "";
+}
+function sendOne(file, meta, onProg) {
+  return new Promise(resolve => {
+    const fd = new FormData(); fd.append("file", file);
+    Object.entries(meta).forEach(([k, v]) => fd.append(k, v)); fd.append("original_timestamp", new Date(file.lastModified).toISOString());
+    const xhr = new XMLHttpRequest();
+    xhr.upload.onprogress = e => e.lengthComputable && onProg(e.loaded);
+    xhr.onload = () => { let b = {}; try { b = JSON.parse(xhr.responseText); } catch {} resolve({ ok: xhr.status === 200, status: xhr.status, body: b, name: file.name }); };
+    xhr.onerror = () => resolve({ ok: false, body: { detail: "Network error" }, name: file.name });
+    xhr.open("POST", `/api/cases/${encodeURIComponent(caseId)}/evidence`); xhr.setRequestHeader("X-Requested-With", "idff"); xhr.send(fd);
+  });
+}
+$("#acquire").onclick = async () => {
+  if (!caseId) return toast("Create or select a case first.");
+  if (!picked.length) return toast("Choose at least one file.");
+  const meta = { source_type: $("#m_type").value, acquisition_method: $("#m_method").value, custodian: $("#m_cust").value, notes: $("#m_notes").value,
+                 expected_sha256: picked.length === 1 ? $("#m_hash").value : "" };
+  const total = picked.reduce((a, f) => a + f.size, 0) || 1, prog = $("#prog"); let done = 0, msgs = [];
+  prog.style.display = "block"; $("#acquire").disabled = true;
+  for (const f of picked) {
+    const r = await sendOne(f, meta, loaded => prog.firstElementChild.style.width = ((done + loaded) / total * 100) + "%");
+    done += f.size;
+    if (!r.ok) { msgs.push(`${r.name}: ${r.body.detail || "upload failed"}`); continue; }
+    let m = `${r.name}: preserved, SHA-256 ${r.body.sha256.slice(0, 12)}…`;
+    if (r.body.declared_match === 0) m = `${r.name}: WARNING, the hash you declared does not match the file received.`;
+    else if (r.body.declared_match === 1) m += " matches the declared hash.";
+    if (r.body.duplicate_of) m += ` Identical to ${r.body.duplicate_of} already in this case.`;
+    msgs.push(m);
+  }
+  prog.style.display = "none"; $("#acquire").disabled = false;
+  toast(msgs.join("  |  "));
+  picked = []; fileIn.value = ""; $("#metaForm").hidden = true; ["#m_cust","#m_notes","#m_hash"].forEach(s => $(s).value = "");
+  $("#dropText").innerHTML = `<strong>Drop evidence files here</strong>, or click to choose.`; refreshAll();
+};
+
+// ================= evidence list =================
+async function loadEvidence() {
+  if (!caseId) { $("#evList").innerHTML = `<div class="empty">${can(WRITE_CASE) ? "Create a case to begin." : "No case available to you yet."}</div>`; return; }
+  const list = await api(`/api/cases/${encodeURIComponent(caseId)}/evidence`);
+  if (!list.length) { $("#evList").innerHTML = `<div class="empty">No evidence in this case yet.</div>`; return; }
+  const arts = await Promise.all(list.map(e => api(`/api/evidence/${e.evidence_id}/artifacts`)));
+  $("#evList").innerHTML = list.map((e, i) => evCard(e, arts[i])).join("");
+}
+function evCard(e, arts) {
+  const v = lastVerify[e.evidence_id] || (e.integrity_status !== "VERIFIED" ? { status: e.integrity_status } : null);
+  const active = arts.find(a => a.status === "active"), p = lastParse[e.evidence_id] || active;
+  const tamper = v && v.status !== "VERIFIED";
+  const decl = e.declared_match === 1 ? `<span class="callout ok" style="padding:2px 8px">Matches the hash declared by the acquirer</span>`
+             : e.declared_match === 0 ? `<span class="callout bad" style="padding:2px 8px">Does not match the hash declared by the acquirer</span>` : "";
+  const writer = can(WRITE_EVIDENCE);
+  return `<div class="ev">
+    <div class="ev-top"><span class="name">${esc(e.filename)}</span><span class="id">${esc(e.evidence_id)}</span>
+      <span class="badge ${esc(e.integrity_status)}">${esc(e.integrity_status.charAt(0) + e.integrity_status.slice(1).toLowerCase())}</span>${decl}</div>
+    <dl class="kv">
+      <dt>SHA-256</dt><dd class="hash">${tamper && v.actual_sha256 ? hashDiff(v.expected_sha256, v.actual_sha256) : groups(e.sha256)}</dd>
+      <dt>SHA-512</dt><dd class="hash muted">${esc(e.sha512.slice(0, 32))}…${esc(e.sha512.slice(-16))}</dd>
+      <dt>Size</dt><dd>${fmtSize(e.size)} (${e.size.toLocaleString()} bytes)</dd>
+      <dt>Source</dt><dd>${esc(e.source_type)} via ${esc(e.acquisition_method)}${e.custodian ? ", custodian " + esc(e.custodian) : ""}</dd>
+      <dt>Acquired</dt><dd>${esc(e.ingested_at)} <span class="muted">· last verified ${esc(e.last_verified_at || "never")}</span></dd>
+      ${e.notes ? `<dt>Notes</dt><dd>${esc(e.notes)}</dd>` : ""}
+    </dl>
+    ${tamper ? `<div class="callout bad"><strong>Integrity check failed.</strong> The preserved file no longer matches the hash recorded at acquisition
+      ${v.status === "MISSING" ? "(the file is missing from the vault)" : v.actual_sha256 ? "(changed characters are highlighted above)" : "(click Verify now to see exactly which characters changed)"}. Parsing is blocked, and the failure is in the custody log.</div>` : ""}
+    ${p ? `<div class="callout ${p.notes.length ? "warn" : "ok"}"><strong>Parsed with ${esc(p.parser)} ${esc(p.parser_version)}:</strong> ${p.event_count} events.
+      <span class="muted">Derived hash ${esc(p.derived_hash.slice(0, 16))}…, linked to master ${esc(p.parent_sha256.slice(0, 16))}…</span>
+      ${p.notes.length ? "<ul>" + p.notes.map(n => `<li>${esc(n)}</li>`).join("") + "</ul>" : ""}</div>` : ""}
+    <div class="ev-actions">
+      <button class="btn line sm" onclick="doVerify('${e.evidence_id}')">Verify now</button>
+      <a class="btn line sm" style="text-decoration:none" target="_blank" rel="noopener" href="/api/evidence/${e.evidence_id}/certificate">Integrity record</a>
+      ${writer ? `<select id="ps_${e.evidence_id}" aria-label="Parser"><option value="">Auto-detect parser</option>${parsers.map(x => `<option value="${esc(x.name)}">${esc(x.name)}</option>`).join("")}</select>
+      <label>Source clock<select id="tz_${e.evidence_id}"><option>Asia/Kolkata</option><option>UTC</option><option>Asia/Dubai</option><option>Europe/London</option><option>America/New_York</option></select></label>
+      <label>Year<input id="yr_${e.evidence_id}" type="number" value="${new Date().getFullYear()}" style="width:80px"></label>
+      <button class="btn sm" onclick="doParse('${e.evidence_id}')">${active ? "Parse again" : "Parse"}</button>` : ""}
+    </div>
+    ${arts.length ? `<div class="muted" style="font-size:13px">Derived artifacts: ${arts.map(a => `<span class="tag" ${a.status === "superseded" ? 'style="opacity:.55;text-decoration:line-through"' : ""}>${esc(a.artifact_id)} · ${esc(a.parser)} ${esc(a.parser_version)} · ${a.event_count} events</span>`).join(" ")}</div>` : ""}
+  </div>`;
+}
+async function doVerify(id) {
+  try { const r = await api(`/api/evidence/${id}/verify`, { method: "POST" }); lastVerify[id] = r;
+    toast(r.status === "VERIFIED" ? "Verified. The file matches its acquisition hash." : "Integrity failure: " + r.status); refreshAll(); }
+  catch (e) { toast(e.message); }
+}
+async function doParse(id) {
+  try { const r = await api(`/api/evidence/${id}/parse`, { method: "POST", body: form({ parser: $("#ps_" + id).value, tz: $("#tz_" + id).value, assume_year: $("#yr_" + id).value }) });
+    lastParse[id] = { ...r, notes: r.notes, event_count: r.event_count }; delete lastVerify[id]; toast(`Parsed ${r.event_count} events with ${r.parser}.`); refreshAll(); }
+  catch (e) { toast(e.message); if (/Integrity check/.test(e.message)) doVerify(id); }
+}
+$("#verifyAll").onclick = async () => {
+  if (!caseId) return;
+  try { const r = await api(`/api/cases/${encodeURIComponent(caseId)}/verify-all`, { method: "POST" });
+    r.results.forEach(x => lastVerify[x.evidence_id] = x); toast(r.all_verified ? `All ${r.results.length} items verified.` : "At least one item failed verification."); refreshAll(); }
+  catch (e) { toast(e.message); }
+};
+$("#manifestBtn").onclick = () => { if (caseId) location.href = `/api/cases/${encodeURIComponent(caseId)}/manifest`; };
+
+// ================= events =================
+async function loadEvents() {
+  if (!caseId) { $("#evBody").innerHTML = `<tr><td colspan="6" class="empty">No case selected.</td></tr>`; return; }
+  const qs = new URLSearchParams({ q: $("#q").value, event_type: $("#typeSel").value, limit: PAGE, offset: page * PAGE });
+  const r = await api(`/api/cases/${encodeURIComponent(caseId)}/events?` + qs);
+  const cur = $("#typeSel").value;
+  $("#typeSel").innerHTML = `<option value="">All event types</option>` + r.event_types.map(t => `<option>${esc(t)}</option>`).join(""); $("#typeSel").value = cur;
+  const from = r.total ? page * PAGE + 1 : 0;
+  $("#evCount").textContent = `${from}–${page * PAGE + r.events.length} of ${r.total} events`;
+  $("#prevPg").disabled = page === 0; $("#nextPg").disabled = (page + 1) * PAGE >= r.total;
+  $("#evBody").innerHTML = r.events.length ? r.events.map(e => `<tr>
+    <td class="mono">${esc((e.normalized_time || "").replace("T", " ").replace("Z", ""))}</td>
+    <td class="mono muted">${esc(e.original_time)}</td>
+    <td class="q-${esc(e.time_quality)}" title="${e.time_quality === "exact" ? "Timestamp carried its own timezone" : "Year and/or timezone were assumed"}">${esc(e.time_quality.replace(/_/g, " "))}</td>
+    <td><span class="tag">${esc(e.event_type)}</span></td><td>${esc(e.summary)}</td>
+    <td class="muted" title="${esc(e.evidence_id)}">${esc(e.source_ref)}</td></tr>`).join("")
+    : `<tr><td colspan="6" class="empty">No events match. Parse an evidence item to populate this view.</td></tr>`;
+}
+let qt; $("#q").oninput = () => { clearTimeout(qt); qt = setTimeout(() => { page = 0; loadEvents(); }, 250); };
+$("#typeSel").onchange = () => { page = 0; loadEvents(); };
+$("#prevPg").onclick = () => { page = Math.max(0, page - 1); loadEvents(); };
+$("#nextPg").onclick = () => { page++; loadEvents(); };
+$("#csvBtn").onclick = () => { if (caseId) location.href = `/api/cases/${encodeURIComponent(caseId)}/events.csv?` + new URLSearchParams({ q: $("#q").value, event_type: $("#typeSel").value }); };
+
+// ================= custody =================
+async function loadCustody() {
+  if (!caseId) return;
+  const r = await api(`/api/cases/${encodeURIComponent(caseId)}/custody`);
+  $("#chainBadge").innerHTML = r.chain.intact ? `<span class="badge VERIFIED">Chain intact · ${r.chain.entries_checked} entries</span>` : `<span class="badge TAMPERED">Chain broken at entry ${r.chain.first_broken_seq}</span>`;
+  $("#cuBody").innerHTML = r.entries.map(e => `<tr>
+    <td class="mono">${e.seq}</td><td class="mono">${esc(e.ts.replace("T", " ").slice(0, 19))}</td><td>${esc(e.actor)}</td>
+    <td><span class="tag" ${e.action === "INTEGRITY_FAILURE" ? 'style="background:var(--bad-bg);color:var(--bad)"' : ""}>${esc(e.action)}</span></td>
+    <td class="muted" style="max-width:420px;word-break:break-word">${esc(Object.entries(e.detail).filter(([k]) => !/sha512/.test(k)).map(([k, v]) => k + "=" + (typeof v === "string" && v.length > 20 ? v.slice(0, 16) + "…" : v)).join(", "))}</td>
+    <td class="mono muted">${esc(e.entry_hash.slice(0, 12))}…</td></tr>`).join("");
+}
+$("#chainBtn").onclick = loadCustody;
+
+// ================= users (admin) =================
+async function loadUsers() {
+  if (me.role !== "admin") return;
+  const us = await api("/api/users");
+  $("#userBody").innerHTML = us.map(u => `<tr><td>${esc(u.username)}</td><td>${esc(u.full_name)}</td><td><span class="tag">${esc(u.role)}</span></td>
+    <td><span class="badge ${u.active ? "VERIFIED" : "off"}">${u.active ? "Active" : "Disabled"}</span></td>
+    <td>${u.username === me.username ? "" : `<button class="btn line sm" onclick="setActive(${u.user_id},${u.active ? 0 : 1})">${u.active ? "Disable" : "Enable"}</button>
+      <button class="btn line sm" onclick="resetPw(${u.user_id})">Reset password</button>`}</td></tr>`).join("");
+}
+$("#u_add").onclick = async () => {
+  try { await api("/api/users", { method: "POST", body: form({ username: $("#u_name").value, full_name: $("#u_full").value, role: $("#u_role").value, password: $("#u_pw").value }) });
+    toast("User created."); ["#u_name","#u_full","#u_pw"].forEach(s => $(s).value = ""); loadUsers(); } catch (e) { toast(e.message); }
+};
+async function setActive(id, a) { try { await api(`/api/users/${id}/active`, { method: "POST", body: form({ active: a }) }); loadUsers(); } catch (e) { toast(e.message); } }
+async function resetPw(id) {
+  const pw = prompt("New temporary password (10+ characters). The user's sessions will be ended."); if (!pw) return;
+  try { await api(`/api/users/${id}/password`, { method: "POST", body: form({ new: pw }) }); toast("Password reset."); } catch (e) { toast(e.message); }
+}
+
+async function refreshAll() { await Promise.all([loadEvidence(), loadEvents(), loadCustody()]).catch(e => toast(e.message)); }
+boot();
+</script>
+</body>
+</html>
