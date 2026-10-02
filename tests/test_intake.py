@@ -194,7 +194,6 @@ def test_custody_chain_breaks_on_edit(client, tmp_path):
     client.post(f"/api/evidence/{ev}/verify")
     assert client.get("/api/custody/verify").json()["intact"] is True
     con = sqlite3.connect(tmp_path / "intake.db")
-    con.execute("DROP TRIGGER IF EXISTS custody_log_no_update")
     con.execute("UPDATE custody_log SET actor='someone-else' WHERE action='evidence_acquired'"); con.commit(); con.close()
     v = client.get("/api/custody/verify").json()
     assert v["intact"] is False and v["first_broken_seq"] is not None

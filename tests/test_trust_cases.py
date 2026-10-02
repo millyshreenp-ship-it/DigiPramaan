@@ -119,8 +119,8 @@ def test_case_lifecycle():
     # List filtering test
     res = client.get("/api/cases?category=Data Theft/Insider", cookies={"idff_session": inv_token})
     assert res.status_code == 200
-    assert len(res.json()) == 1
-    assert res.json()[0]["case_id"] == case_id
+    assert len(res.json()["items"]) == 1
+    assert res.json()["items"][0]["case_id"] == case_id
 def test_status_transitions():
     admin_token, inv_token = setup_users()
     res = client.post("/api/cases", data={"title": "T1"}, cookies={"idff_session": inv_token})
@@ -185,8 +185,8 @@ def test_list_pagination_filtering():
     
     # Filter by priority
     res = client.get("/api/cases?priority=High", cookies={"idff_session": inv_token})
-    assert len(res.json()) == 1
-    assert res.json()[0]["title"] == "T2"
+    assert len(res.json()["items"]) == 1
+    assert res.json()["items"][0]["title"] == "T2"
     
     # Pagination
     res = client.get("/api/cases?page=1", cookies={"idff_session": inv_token})

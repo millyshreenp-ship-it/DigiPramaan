@@ -399,7 +399,8 @@ document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.datas
 
 // ================= cases =================
 async function loadCases(select) {
-  const cs = await api("/api/cases");
+  const r = await api("/api/cases");
+  const cs = r.items || [];
   $("#caseSel").innerHTML = cs.length ? cs.map(c => `<option value="${esc(c.case_id)}">${esc(c.case_id)}: ${esc(c.title)}</option>`).join("") : `<option value="">No cases yet</option>`;
   if (select) $("#caseSel").value = select; else if (caseId && cs.some(c => c.case_id === caseId)) $("#caseSel").value = caseId;
   caseId = $("#caseSel").value || null;

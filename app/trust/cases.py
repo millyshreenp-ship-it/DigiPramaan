@@ -72,9 +72,7 @@ def list_cases(request: Request, user: dict = ANY):
         total = c_db.execute(f"SELECT COUNT(DISTINCT c.case_id) {base_query}", params).fetchone()[0]
         items = [dict(r) for r in c_db.execute(f"SELECT DISTINCT c.* {base_query} ORDER BY c.{sort} LIMIT ? OFFSET ?", params + [per_page, offset]).fetchall()]
         
-        if "page" in request.query_params:
-            return {"total": total, "items": items, "page": page}
-        return items
+        return {"total": total, "items": items, "page": page, "page_size": per_page}
 
 @router.get("/api/cases/{case_id}")
 def get_case(case_id: str, user: dict = Depends(require_permission("case:read"))):
