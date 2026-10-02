@@ -30,6 +30,8 @@ def get_case_or_403(case_id: str, user: dict):
     with db.session() as c:
         row = c.execute("SELECT 1 FROM case_members WHERE case_id=? AND user_id=?", (case_id, user["user_id"])).fetchone()
         if not row:
+            from app import custody
+            custody.append(c, actor=user["username"], action="ACCESS_DENIED", case_id=case_id, detail={"reason": "Not assigned to case"})
             raise HTTPException(403, "Not assigned to this case.")
 
 def check_evidence_access(evidence_id: str, user: dict):
@@ -49,10 +51,11 @@ async def case_access_middleware(request: Request, call_next):
                 r = c.execute("SELECT u.user_id,u.username,u.full_name,u.role FROM sessions s JOIN users u ON u.user_id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.active=1", (auth._tok_hash(token), time.time())).fetchone()
             if r:
                 user = dict(r)
-                # manual catch because middleware can't bubble HTTPException properly
                 if os.environ.get("LEGACY_OPEN_ACCESS", "0") != "1" and user["role"] != "admin":
                     with db.session() as c2:
                         row = c2.execute("SELECT 1 FROM case_members WHERE case_id=? AND user_id=?", (case_id, user["user_id"])).fetchone()
                         if not row:
+                            from app import custody
+                            custody.append(c2, actor=user["username"], action="ACCESS_DENIED", case_id=case_id, detail={"path": request.url.path})
                             return JSONResponse(status_code=403, content={"detail": "Not assigned to this case."})
     return await call_next(request)

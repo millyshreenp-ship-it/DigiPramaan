@@ -76,8 +76,6 @@ def init_db() -> None:
     conn.close()
 
 def _backfill_case_members(conn):
-    import os
-    if os.environ.get("LEGACY_OPEN_ACCESS", "0") == "1": return
     count = conn.execute("SELECT COUNT(*) FROM case_members").fetchone()[0]
     if count == 0:
         cases = conn.execute("SELECT case_id FROM cases").fetchall()
@@ -88,6 +86,8 @@ def _backfill_case_members(conn):
             for c in cases:
                 for u in users:
                     conn.execute("INSERT INTO case_members VALUES (?, ?, ?, ?, ?)", (c["case_id"], u["user_id"], u["role"], "system", now))
+            from app import custody
+            custody.append(conn, actor="system", action="LEGACY_BACKFILL", detail={"cases": len(cases), "users": len(users)})
 
 @contextmanager
 def session():

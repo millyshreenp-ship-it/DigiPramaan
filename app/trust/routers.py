@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, HTTPException
 from app import db, auth, custody
 from app.trust.rbac import require_permission
 import json
@@ -8,7 +8,7 @@ router = APIRouter()
 
 # ================= permissions =================
 @router.get("/api/permissions")
-def get_permissions():
+def get_permissions(user: dict = Depends(auth.current_user)):
     from app.trust.rbac import PERMISSIONS
     return PERMISSIONS
 

@@ -139,11 +139,7 @@
   <button class="tab" role="tab" data-tab="graph" aria-selected="false">Evidence graph</button>
   <button class="tab" role="tab" data-tab="query" aria-selected="false">Investigator query</button>
   <button class="tab" role="tab" data-tab="custody" aria-selected="false">Chain of custody</button>
-  <button class="tab" role="tab" data-tab="members" aria-selected="false">Case members</button>
   <button class="tab" role="tab" data-tab="users" aria-selected="false" id="usersTab" hidden>Users</button>
-  <button class="tab" role="tab" data-tab="permissions" aria-selected="false">Permissions Matrix</button>
-  <button class="tab" role="tab" data-tab="audit" aria-selected="false" id="auditTab" hidden>Global Audit</button>
-  <button class="tab" role="tab" data-tab="sandbox" aria-selected="false" id="sandboxTab" hidden>Sandbox</button>
 </nav>
 
 <main>
@@ -152,13 +148,7 @@
     <div class="pad form">
       <label class="f">Case title<input id="nc_title" placeholder="e.g. Payroll file exfiltration, Finance WS-07"></label>
       <label class="f">Jurisdiction<input id="nc_jur" placeholder="e.g. Haryana Police Cyber Cell"></label>
-      <label class="f">Human Case Reference<input id="nc_href" placeholder="e.g. SUT-2026-0001 (auto if empty)"></label>
-      <label class="f">FIR/Complaint Number<input id="nc_fir" placeholder="e.g. FIR/2026/0123"></label>
-      <label class="f">Crime Category<select id="nc_cat"><option>Financial Fraud</option><option>Digital Arrest Scam</option><option>Mule Account</option><option>Data Theft/Insider</option><option>Ransomware</option><option selected>Other</option></select></label>
-      <label class="f">Unit / Police Station<input id="nc_unit"></label>
-      <label class="f">Priority<select id="nc_pri"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select></label>
       <label class="f">Lead investigator (defaults to you)<input id="nc_inv"></label>
-      <label class="f wide">Description<textarea id="nc_desc" rows="2"></textarea></label>
       <div class="wide"><button class="btn" id="nc_save">Create case</button></div>
     </div>
   </section>
@@ -292,46 +282,6 @@
     <div class="scroll"><table><thead><tr><th>#</th><th>When (UTC)</th><th>Who</th><th>Action</th><th>Detail</th><th>Entry hash</th></tr></thead><tbody id="cuBody"></tbody></table></div>
   </section>
 
-  <section id="paneMembers" hidden>
-    <h2>Case members</h2>
-    <div class="pad form" id="addMemberForm">
-      <label class="f">Username<input id="mem_u" placeholder="Username to assign"></label>
-      <label class="f">Role on this case
-        <select id="mem_role"><option>investigator</option><option>examiner</option><option>supervisor</option><option>reviewer</option><option>auditor</option></select>
-      </label>
-      <div class="wide"><button class="btn" id="mem_add">Assign to case</button></div>
-    </div>
-    <div class="scroll"><table><thead><tr><th>Username</th><th>Name</th><th>Case Role</th><th>Assigned By</th><th>Assigned At</th></tr></thead><tbody id="memBody"></tbody></table></div>
-  </section>
-
-  <section id="panePermissions" hidden>
-    <h2>Permissions Matrix</h2>
-    <div class="pad muted" style="font-size:13px">This matrix shows the declarative permissions required for actions. Roles grant a specific set of permissions. Note: Admin and Auditor have global access to cases, while other roles require explicit case assignment.</div>
-    <div class="scroll"><table id="permTable"></table></div>
-  </section>
-
-  <section id="paneAudit" hidden>
-    <div class="toolbar"><span id="gChainBadge"></span>
-      <button class="btn line sm" id="gExportBtn">Export Signed Audit Trail</button>
-    </div>
-    <div class="scroll"><table><thead><tr><th>#</th><th>When (UTC)</th><th>Who</th><th>Action</th><th>Case</th><th>Evidence</th><th>Detail</th><th>Entry hash</th></tr></thead><tbody id="gAuditBody"></tbody></table></div>
-  </section>
-
-  <section id="paneSandbox" hidden>
-    <h2>Synthetic Sandbox</h2>
-    <div class="pad form">
-      <div class="muted">Run a script in an isolated Docker container with the <code>FORENSIC_DATA_DIR</code> mounted read-only at <code>/data</code>.</div>
-      <label class="f">Docker Image<input id="sb_image" value="alpine:latest"></label>
-      <label class="f wide">Shell Script<textarea id="sb_script" rows="6" placeholder="#!/bin/sh&#10;ls -la /data"></textarea></label>
-      <div class="wide"><button class="btn" id="sb_run">Run in Sandbox</button></div>
-    </div>
-    <div class="pad" id="sb_output_container" hidden>
-      <h3>Execution Result (Saved as Evidence <span id="sb_ev_id" class="mono"></span>)</h3>
-      <div class="muted">Exit code: <span id="sb_exit_code"></span></div>
-      <pre id="sb_output" style="background:#111;color:#eee;padding:10px;border-radius:4px;overflow-x:auto;max-height:400px"></pre>
-    </div>
-  </section>
-
   <div id="paneUsers" style="display:none;gap:18px">
     <section>
       <h2>Add a user</h2>
@@ -402,8 +352,6 @@ async function enterApp() {
   $("#authView").hidden = true; $("#appView").hidden = false;
   $("#meName").textContent = me.full_name || me.username; $("#meRole").textContent = me.role;
   $("#newCaseBtn").hidden = !can(WRITE_CASE); $("#usersTab").hidden = me.role !== "admin";
-  $("#auditTab").hidden = !can(["admin", "auditor"]);
-  $("#sandboxTab").hidden = !_perms ? true : (_perms[me.role] || []).includes("sandbox:run");
   $("#addBox").hidden = !can(WRITE_EVIDENCE);
   parsers = await api("/api/parsers"); showTab("evidence"); await loadCases();
 }
@@ -415,6 +363,22 @@ $("#pw_save").onclick = async () => {
 };
 
 // ================= tabs =================
+function registerTab(id, label, loadFn) {
+  const btn = document.createElement("button");
+  btn.className = "tab"; btn.role = "tab"; btn.dataset.tab = id; btn.textContent = label;
+  btn.id = id + "Tab";
+  btn.onclick = () => showTab(id);
+  document.querySelector("nav").insertBefore(btn, $("#usersTab"));
+  
+  const origShowTab = window.showTab;
+  window.showTab = function(t) {
+    origShowTab(t);
+    const pane = document.getElementById("pane" + id.charAt(0).toUpperCase() + id.slice(1));
+    if (pane) pane.hidden = t !== id;
+    if (t === id && loadFn) loadFn();
+  };
+}
+
 function showTab(t) {
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
   $("#paneEvidence").style.display = t === "evidence" ? "grid" : "none";
@@ -423,19 +387,12 @@ function showTab(t) {
   $("#paneGraph").hidden = t !== "graph";
   $("#paneQuery").hidden = t !== "query";
   $("#paneCustody").hidden = t !== "custody";
-  $("#paneMembers").hidden = t !== "members";
-  $("#panePermissions").hidden = t !== "permissions";
-  $("#paneAudit").hidden = t !== "audit";
-  $("#paneSandbox").hidden = t !== "sandbox";
   $("#paneUsers").style.display = t === "users" ? "grid" : "none";
   if (t === "events") loadEvents();
   if (t === "timeline") loadTimeline();
   if (t === "graph") loadGraph();
   if (t === "query") loadQuery();
   if (t === "custody") loadCustody();
-  if (t === "members") loadMembers();
-  if (t === "permissions") loadPermissions();
-  if (t === "audit") loadAudit();
   if (t === "users") loadUsers();
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
@@ -452,9 +409,8 @@ async function loadCases(select) {
 $("#caseSel").onchange = () => { caseId = $("#caseSel").value; lastVerify = {}; lastParse = {}; page = 0; refreshAll(); };
 $("#newCaseBtn").onclick = () => { $("#newCase").hidden = !$("#newCase").hidden; };
 $("#nc_save").onclick = async () => {
-  try { const r = await api("/api/cases", { method: "POST", body: form({ title: $("#nc_title").value, jurisdiction: $("#nc_jur").value, investigator: $("#nc_inv").value,
-    human_ref: $("#nc_href").value, fir_number: $("#nc_fir").value, crime_category: $("#nc_cat").value, unit: $("#nc_unit").value, description: $("#nc_desc").value, priority: $("#nc_pri").value }) });
-    $("#newCase").hidden = true; ["#nc_title","#nc_jur","#nc_inv","#nc_href","#nc_fir","#nc_unit","#nc_desc"].forEach(s => $(s).value = ""); toast("Case " + r.case_id + " created."); loadCases(r.case_id); }
+  try { const r = await api("/api/cases", { method: "POST", body: form({ title: $("#nc_title").value, jurisdiction: $("#nc_jur").value, investigator: $("#nc_inv").value }) });
+    $("#newCase").hidden = true; ["#nc_title","#nc_jur","#nc_inv"].forEach(s => $(s).value = ""); toast("Case " + r.case_id + " created."); loadCases(r.case_id); }
   catch (e) { toast(e.message); }
 };
 
@@ -622,70 +578,7 @@ async function resetPw(id) {
   try { await api(`/api/users/${id}/password`, { method: "POST", body: form({ new: pw }) }); toast("Password reset."); } catch (e) { toast(e.message); }
 }
 
-// ================= members & permissions =================
-async function loadMembers() {
-  if (!caseId) { $("#memBody").innerHTML = `<tr><td colspan="5" class="empty">No case selected.</td></tr>`; return; }
-  try {
-    const r = await api(`/api/cases/${encodeURIComponent(caseId)}/members`);
-    $("#memBody").innerHTML = r.length ? r.map(m => `<tr><td>${esc(m.username)}</td><td>${esc(m.full_name)}</td><td><span class="tag">${esc(m.case_role)}</span></td><td>${esc(m.assigned_by)}</td><td class="mono muted">${esc(m.assigned_at.replace("T"," ").slice(0,19))}</td></tr>`).join("") : `<tr><td colspan="5" class="empty">No members assigned explicitly.</td></tr>`;
-  } catch (e) { $("#memBody").innerHTML = `<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`; }
-}
-$("#mem_add").onclick = async () => {
-  if (!caseId) return;
-  try {
-    await api(`/api/cases/${encodeURIComponent(caseId)}/members`, { method: "POST", body: form({ username: $("#mem_u").value, role: $("#mem_role").value }) });
-    toast("Member assigned."); $("#mem_u").value = ""; loadMembers();
-  } catch (e) { toast(e.message); }
-};
-let _perms = null;
-async function loadPermissions() {
-  if (!_perms) _perms = await api("/api/permissions");
-  const roles = Object.keys(_perms);
-  const allPerms = [...new Set(Object.values(_perms).flat())].sort();
-  let html = `<thead><tr><th>Permission</th>${roles.map(r => `<th>${esc(r)}</th>`).join("")}</tr></thead><tbody>`;
-  for (const p of allPerms) {
-    html += `<tr><td class="mono">${esc(p)}</td>${roles.map(r => `<td style="text-align:center;font-weight:bold">${_perms[r].includes(p) ? '<span style="color:var(--ok)">✓</span>' : '<span style="color:var(--line)">-</span>'}</td>`).join("")}</tr>`;
-  }
-  html += `</tbody>`;
-  $("#permTable").innerHTML = html;
-}
-
-async function loadAudit() {
-  if (!can(["admin", "auditor"])) return;
-  try {
-    const r = await api("/api/audit");
-    $("#gChainBadge").className = "badge " + (r.chain.valid ? "VERIFIED" : "TAMPERED");
-    $("#gChainBadge").textContent = r.chain.valid ? "Global Chain Verified" : "GLOBAL CHAIN BROKEN: " + r.chain.reason;
-    $("#gAuditBody").innerHTML = r.entries.map(e => `<tr><td class="mono muted">${e.seq}</td><td class="mono muted">${esc(e.timestamp.replace("T"," ").slice(0,19))}</td><td>${esc(e.actor)}</td><td><span class="tag">${esc(e.action)}</span></td><td>${esc(e.case_id || "-")}</td><td>${esc(e.evidence_id || "-")}</td><td><pre>${esc(JSON.stringify(e.detail,null,1))}</pre></td><td class="mono muted" style="font-size:10px">${esc(e.entry_hash)}</td></tr>`).join("");
-  } catch (e) { $("#gAuditBody").innerHTML = `<tr><td colspan="8" class="empty">${esc(e.message)}</td></tr>`; }
-}
-$("#gExportBtn").onclick = async () => {
-  try {
-    const r = await api("/api/audit/export");
-    const blob = new Blob([JSON.stringify(r, null, 2)], {type: "application/json"});
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `global_audit_trail_${new Date().toISOString().replace(/[:.]/g,"-")}.json`; a.click();
-  } catch (e) { toast(e.message); }
-};
-
-$("#sb_run").onclick = async () => {
-  if (!caseId) return toast("Select a case first.");
-  $("#sb_run").disabled = true; $("#sb_run").textContent = "Running...";
-  $("#sb_output_container").hidden = true;
-  try {
-    const r = await api(`/api/cases/${encodeURIComponent(caseId)}/sandbox/run`, {
-      method: "POST", body: form({ script: $("#sb_script").value, image: $("#sb_image").value })
-    });
-    $("#sb_ev_id").textContent = r.evidence_id;
-    $("#sb_exit_code").textContent = r.exit_code;
-    $("#sb_output").textContent = r.output;
-    $("#sb_output_container").hidden = false;
-    toast("Sandbox execution complete. Output saved as evidence.");
-    loadEvidence();
-  } catch (e) { toast(e.message); }
-  $("#sb_run").disabled = false; $("#sb_run").textContent = "Run in Sandbox";
-};
-
-async function refreshAll() { await Promise.all([loadEvidence(), loadEvents(), loadCustody()]).catch(e => toast(e.message)); if (!$("#paneTimeline").hidden) loadTimeline(); if (!$("#paneGraph").hidden) loadGraph(); if (!$("#paneQuery").hidden) loadQuery(); if (!$("#paneMembers").hidden) loadMembers(); if (!$("#paneAudit").hidden) loadAudit(); }
+async function refreshAll() { await Promise.all([loadEvidence(), loadEvents(), loadCustody()]).catch(e => toast(e.message)); if (!$("#paneTimeline").hidden) loadTimeline(); if (!$("#paneGraph").hidden) loadGraph(); if (!$("#paneQuery").hidden) loadQuery(); }
 
 // ================= Person 2: Timeline =================
 const LANE_COLORS = ["#244B6B","#0B7A62","#8A5A00","#5B3A8C","#B3261E","#1A6B8A","#6B5B2A"];
@@ -939,6 +832,12 @@ let iqt; ["#iq_q","#iq_entity","#iq_etype","#iq_from","#iq_to"].forEach(sel => {
 
 
 boot();
+</script>
+<script src="/static/trust.js"></script>
+<script>
+  if (window.initTrustTabs) {
+    window.initTrustTabs(window.registerTab);
+  }
 </script>
 </body>
 </html>
