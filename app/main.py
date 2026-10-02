@@ -393,6 +393,107 @@ def events_csv(case_id: str, q: str = "", event_type: str = "", evidence_id: str
     return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv",
                              headers={"Content-Disposition": f'attachment; filename="{case_id}-events.csv"'})
 
+
+# ================= Person 2: Timeline & Correlation =================
+@app.get("/api/cases/{case_id}/timeline")
+def timeline(
+    case_id: str,
+    bucket_seconds: int = 60,
+    skew: str = "",
+    q: str = "",
+    event_type: str = "",
+    evidence_id: str = "",
+    limit: int = 5000,
+    user: dict = ANY,
+):
+    """Unified timeline. Optional skew=evidence_id:seconds,evidence_id:seconds for clock-skew demo."""
+    where, args = _event_query(case_id, q, event_type, evidence_id)
+    with db.session() as c:
+        _get_case(c, case_id)
+        rows = c.execute(
+            "SELECT * " + where + " ORDER BY normalized_time, event_id LIMIT ?",
+            args + [max(1, min(limit, 10000))],
+        ).fetchall()
+        events = []
+        for r in rows:
+            d = dict(r)
+            d["fields"] = json.loads(d.get("fields") or "{}")
+            d["entities"] = json.loads(d.get("entities") or "[]")
+            events.append(d)
+        evidence_map = {
+            r["evidence_id"]: dict(r)
+            for r in c.execute("SELECT * FROM evidence WHERE case_id=?", (case_id,))
+        }
+    skew_map = {}
+    if skew:
+        for part in skew.split(","):
+            part = part.strip()
+            if ":" not in part:
+                continue
+            eid, sec = part.split(":", 1)
+            try:
+                skew_map[eid.strip()] = float(sec)
+            except ValueError:
+                pass
+    result = build_timeline(events, evidence_map, bucket_seconds=max(1, min(bucket_seconds, 86400)), skew_map=skew_map)
+    return result
+
+
+@app.get("/api/cases/{case_id}/graph")
+def graph(
+    case_id: str,
+    q: str = "",
+    event_type: str = "",
+    evidence_id: str = "",
+    max_events: int = 500,
+    sequential_window: float = 120.0,
+    user: dict = ANY,
+):
+    """Evidence graph: nodes (evidence/event/entity) + edges (contains/mentions/sequential/same_entity)."""
+    where, args = _event_query(case_id, q, event_type, evidence_id)
+    with db.session() as c:
+        _get_case(c, case_id)
+        rows = c.execute(
+            "SELECT * " + where + " ORDER BY normalized_time, event_id LIMIT ?",
+            args + [max(1, min(max_events * 2, 10000))],
+        ).fetchall()
+        events = []
+        for r in rows:
+            d = dict(r)
+            d["fields"] = json.loads(d.get("fields") or "{}")
+            d["entities"] = json.loads(d.get("entities") or "[]")
+            events.append(d)
+        evidence_list = [dict(r) for r in c.execute("SELECT * FROM evidence WHERE case_id=?", (case_id,))]
+    return build_graph(events, evidence_list, max_events=max(10, min(max_events, 2000)), sequential_window_seconds=sequential_window)
+
+
+@app.get("/api/cases/{case_id}/query")
+def investigator_query(
+    case_id: str,
+    q: str = "",
+    event_type: str = "",
+    entity: str = "",
+    entity_type: str = "",
+    evidence_id: str = "",
+    time_from: str = "",
+    time_to: str = "",
+    time_quality: str = "",
+    limit: int = 200,
+    offset: int = 0,
+    user: dict = ANY,
+):
+    """Investigator query interface with facets for progressive refinement."""
+    types = [t.strip() for t in event_type.split(",") if t.strip()] if event_type else None
+    with db.session() as c:
+        _get_case(c, case_id)
+        return run_investigator_query(
+            c, case_id,
+            q=q, event_types=types, entity=entity, entity_type=entity_type,
+            evidence_id=evidence_id, time_from=time_from, time_to=time_to,
+            time_quality=time_quality, limit=limit, offset=offset,
+        )
+
+
 # ================= custody =================
 @app.get("/api/cases/{case_id}/custody")
 def custody_log(case_id: str, user: dict = ANY):
