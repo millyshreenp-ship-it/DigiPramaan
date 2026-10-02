@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import auth, config, custody, db, integrity
 from .parsers import ParseContext, all_parsers, detect, get_parser
+from .correlation import build_timeline, build_graph, run_investigator_query
 
 @asynccontextmanager
 async def lifespan(_app):
