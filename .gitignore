@@ -4,4 +4,9 @@ __pycache__/
 *.pyc
 
 .venv/
+venv/
 .env
+throwaway_data*/
+*.db
+vault/
+keys/
