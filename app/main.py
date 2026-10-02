@@ -26,8 +26,9 @@ async def lifespan(_app):
 app = FastAPI(title="IDFF Evidence Intake & Integrity", version=config.TOOL_VERSION, lifespan=lifespan,
               docs_url=None, redoc_url=None)
 STATIC = Path(__file__).resolve().parent.parent / "static"
-from app.trust import routers as trust_routers, rbac
+from app.trust import routers as trust_routers, cases, rbac
 app.include_router(trust_routers.router)
+app.include_router(cases.router)
 app.middleware("http")(rbac.case_access_middleware)
 
 WRITE_CASE = ("admin", "investigator", "supervisor")
@@ -165,31 +166,6 @@ def reset_password(user_id: int, new: str = Form(...), user: dict = Depends(auth
     return {"ok": True}
 
 # ================= cases =================
-@app.post("/api/cases")
-def create_case(title: str = Form(...), jurisdiction: str = Form(""), investigator: str = Form(""),
-                human_ref: str = Form(""), fir_number: str = Form(""), crime_category: str = Form(""),
-                unit: str = Form(""), description: str = Form(""), priority: str = Form(""),
-                user: dict = Depends(rbac.require_permission("case:create"))):
-    if not title.strip(): raise HTTPException(400, "Case title is required.")
-    case_id = "CASE-" + datetime.now().strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:4].upper()
-    lead = investigator.strip() or user["full_name"] or user["username"]
-    with db.session() as c:
-        c.execute("INSERT INTO cases (case_id, title, jurisdiction, investigator, status, created_at, human_ref, fir_number, crime_category, unit, description, priority, created_by, legal_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                  (case_id, title.strip(), jurisdiction.strip(), lead, "open", _now(), human_ref, fir_number, crime_category, unit, description, priority, user["username"], 0))
-        c.execute("INSERT INTO case_members (case_id, user_id, case_role, assigned_by, assigned_at) VALUES (?, ?, ?, ?, ?)",
-                  (case_id, user["user_id"], "lead", "system", _now()))
-        custody.append(c, actor=user["username"], action="case_created", case_id=case_id, detail={"title": title.strip()})
-    return {"case_id": case_id}
-
-@app.get("/api/cases")
-def list_cases(user: dict = ANY):
-    import os
-    with db.session() as c:
-        if os.environ.get("LEGACY_OPEN_ACCESS", "0") == "1" or user["role"] == "admin":
-            return [dict(r) for r in c.execute("SELECT * FROM cases ORDER BY created_at DESC")]
-        else:
-            return [dict(r) for r in c.execute("SELECT c.* FROM cases c JOIN case_members cm ON c.case_id = cm.case_id WHERE cm.user_id=? ORDER BY c.created_at DESC", (user["user_id"],))]
-
 # ================= acquisition =================
 @app.post("/api/cases/{case_id}/evidence")
 def upload_evidence(case_id: str, file: UploadFile = File(...), source_type: str = Form("log"),

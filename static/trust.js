@@ -1,4 +1,62 @@
 const TRUST_HTML = `
+  <section id="paneCaseList" hidden>
+    <h2>Case List</h2>
+    <div class="toolbar">
+      <input type="search" id="cl_q" placeholder="Search title or ref">
+      <select id="cl_status"><option value="">All Statuses</option><option>Open</option><option>Under Analysis</option><option>Pending Legal Review</option><option>Closed</option><option>Archived</option></select>
+      <select id="cl_pri"><option value="">All Priorities</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+      <select id="cl_cat"><option value="">All Categories</option><option>Financial Fraud</option><option>Digital Arrest Scam</option><option>Mule Account</option><option>Data Theft/Insider</option><option>Ransomware</option><option>Other</option></select>
+      <select id="cl_sort"><option value="created_at DESC">Newest first</option><option value="created_at ASC">Oldest first</option></select>
+      <span class="muted" id="cl_count"></span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Reference</th><th>Title</th><th>Status</th><th>Priority</th><th>Category</th><th>Created</th></tr></thead>
+        <tbody id="clBody"></tbody>
+      </table>
+    </div>
+    <div class="toolbar" style="margin-top:10px">
+      <button class="btn line sm" id="cl_prev">Previous</button>
+      <span id="cl_page" class="muted" style="margin:0 10px">Page 1</span>
+      <button class="btn line sm" id="cl_next">Next</button>
+    </div>
+  </section>
+  <section id="paneOverview" hidden>
+    <h2>Case Overview</h2>
+    <div class="pad form">
+      <label class="f">Title<input id="co_title"></label>
+      <label class="f">Reference (e.g. SUT-2026-0001)<input id="co_ref"></label>
+      <label class="f">FIR/Complaint #<input id="co_fir"></label>
+      <label class="f">Crime Category
+        <select id="co_cat">
+          <option value="">-- Select --</option>
+          <option>Financial Fraud</option><option>Digital Arrest Scam</option>
+          <option>Mule Account</option><option>Data Theft/Insider</option>
+          <option>Ransomware</option><option>Other</option>
+        </select>
+      </label>
+      <label class="f">Unit<input id="co_unit"></label>
+      <label class="f">Jurisdiction<input id="co_jur"></label>
+      <label class="f">Priority
+        <select id="co_pri"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+      </label>
+      <label class="f wide">Description<textarea id="co_desc" rows="3"></textarea></label>
+      <div class="wide"><button class="btn" id="co_save">Save Metadata</button> <span id="co_hold_ui" style="margin-left:15px"><label><input type="checkbox" id="co_hold"> Legal Hold</label></span></div>
+    </div>
+    
+    <h3 style="margin:20px 18px 10px">Status & Lifecycle</h3>
+    <div class="pad form" style="background:#f9f9f9;border-radius:6px;margin:0 18px">
+      <label class="f">Current Status<input id="co_status_curr" disabled></label>
+      <label class="f">New Status
+        <select id="co_status_new">
+          <option>Open</option><option>Under Analysis</option>
+          <option>Pending Legal Review</option><option>Closed</option><option>Archived</option>
+        </select>
+      </label>
+      <label class="f wide">Reason for change<input id="co_status_reason" placeholder="Mandatory reason for audit log"></label>
+      <div class="wide"><button class="btn" id="co_status_btn">Change Status</button></div>
+    </div>
+  </section>
   <section id="paneMembers" hidden>
     <h2>Case members</h2>
     <div class="pad form" id="addMemberForm">
@@ -45,6 +103,8 @@ function initTrustTabs(registerTab) {
   document.querySelector("main").insertAdjacentHTML("beforeend", TRUST_HTML);
 
   // Register Tabs
+  registerTab("caselist", "Case List", loadCaseList);
+  registerTab("overview", "Case Overview", loadOverview);
   registerTab("members", "Case members", loadMembers);
   registerTab("permissions", "Permissions Matrix", loadPermissions);
   registerTab("audit", "Global Audit", loadAudit);
@@ -61,6 +121,8 @@ function initTrustTabs(registerTab) {
   const origRefreshAll = window.refreshAll;
   window.refreshAll = async function() {
     await origRefreshAll();
+    if (!$("#paneCaseList").hidden) loadCaseList();
+    if (!$("#paneOverview").hidden) loadOverview();
     if (!$("#paneMembers").hidden) loadMembers();
     if (!$("#paneAudit").hidden) loadAudit();
   };
@@ -72,6 +134,40 @@ function initTrustTabs(registerTab) {
       await api("/api/cases/" + encodeURIComponent(caseId) + "/members", { method: "POST", body: form({ username: $("#mem_u").value, role: $("#mem_role").value }) });
       toast("Member assigned."); $("#mem_u").value = ""; loadMembers();
     } catch (e) { toast(e.message); }
+  };
+  window.removeMember = async (username) => {
+    if (!confirm("Remove " + username + "?")) return;
+    try {
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/members/" + encodeURIComponent(username), { method: "DELETE" });
+      toast("Member removed."); loadMembers();
+    } catch(e) { toast(e.message); }
+  };
+  $("#co_save").onclick = async () => {
+    if(!caseId) return;
+    try {
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/metadata", { method: "POST", body: form({
+        title: $("#co_title").value, human_reference: $("#co_ref").value, fir_number: $("#co_fir").value,
+        crime_category: $("#co_cat").value, unit: $("#co_unit").value, jurisdiction: $("#co_jur").value,
+        priority: $("#co_pri").value, description: $("#co_desc").value
+      })});
+      toast("Metadata updated.");
+    } catch(e) { toast(e.message); }
+  };
+  $("#co_status_btn").onclick = async () => {
+    if(!caseId) return;
+    try {
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/status", { method: "POST", body: form({
+        status: $("#co_status_new").value, reason: $("#co_status_reason").value
+      })});
+      toast("Status changed."); $("#co_status_reason").value = ""; loadOverview();
+    } catch(e) { toast(e.message); }
+  };
+  $("#co_hold").onchange = async () => {
+    if(!caseId) return;
+    try {
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/legal_hold", { method: "POST", body: form({ hold: $("#co_hold").checked ? 1 : 0 }) });
+      toast("Legal hold updated.");
+    } catch(e) { toast(e.message); $("#co_hold").checked = !$("#co_hold").checked; }
   };
 
   $("#gExportBtn").onclick = async () => {
@@ -106,8 +202,26 @@ async function loadMembers() {
   if (!caseId) { $("#memBody").innerHTML = '<tr><td colspan="5" class="empty">No case selected.</td></tr>'; return; }
   try {
     const r = await api("/api/cases/" + encodeURIComponent(caseId) + "/members");
-    $("#memBody").innerHTML = r.length ? r.map(m => '<tr><td>'+esc(m.username)+'</td><td>'+esc(m.full_name)+'</td><td><span class="tag">'+esc(m.case_role)+'</span></td><td>'+esc(m.assigned_by)+'</td><td class="mono muted">'+esc(m.assigned_at.replace("T"," ").slice(0,19))+'</td></tr>').join("") : '<tr><td colspan="5" class="empty">No members assigned explicitly.</td></tr>';
-  } catch (e) { $("#memBody").innerHTML = '<tr><td colspan="5" class="empty">'+esc(e.message)+'</td></tr>'; }
+    $("#memBody").innerHTML = r.length ? r.map(m => '<tr><td>'+esc(m.username)+'</td><td>'+esc(m.full_name)+'</td><td><span class="tag">'+esc(m.case_role)+'</span></td><td>'+esc(m.assigned_by)+'</td><td class="mono muted">'+esc(m.assigned_at.replace("T"," ").slice(0,19))+'</td><td><button class="btn sm line" onclick="removeMember(\\''+esc(m.username)+'\\')">Remove</button></td></tr>').join("") : '<tr><td colspan="6" class="empty">No members assigned explicitly.</td></tr>';
+  } catch (e) { $("#memBody").innerHTML = '<tr><td colspan="6" class="empty">'+esc(e.message)+'</td></tr>'; }
+}
+
+async function loadOverview() {
+  if (!caseId) return;
+  try {
+    const r = await api("/api/cases/" + encodeURIComponent(caseId));
+    $("#co_title").value = r.title || "";
+    $("#co_ref").value = r.human_reference || "";
+    $("#co_fir").value = r.fir_number || "";
+    $("#co_cat").value = r.crime_category || "";
+    $("#co_unit").value = r.unit || "";
+    $("#co_jur").value = r.jurisdiction || "";
+    $("#co_pri").value = r.priority || "Medium";
+    $("#co_desc").value = r.description || "";
+    $("#co_status_curr").value = r.status || "Open";
+    $("#co_status_new").value = r.status || "Open";
+    $("#co_hold").checked = !!r.legal_hold;
+  } catch(e) { toast(e.message); }
 }
 
 let _perms = null;
@@ -133,4 +247,36 @@ async function loadAudit() {
   } catch (e) { $("#gAuditBody").innerHTML = '<tr><td colspan="8" class="empty">'+esc(e.message)+'</td></tr>'; }
 }
 
+let clPage = 1;
+async function loadCaseList() {
+  try {
+    let q = "?page=" + clPage;
+    if ($("#cl_q").value) q += "&q=" + encodeURIComponent($("#cl_q").value);
+    if ($("#cl_status").value) q += "&status=" + encodeURIComponent($("#cl_status").value);
+    if ($("#cl_pri").value) q += "&priority=" + encodeURIComponent($("#cl_pri").value);
+    if ($("#cl_cat").value) q += "&category=" + encodeURIComponent($("#cl_cat").value);
+    if ($("#cl_sort").value) q += "&sort=" + encodeURIComponent($("#cl_sort").value);
+    
+    const r = await api("/api/cases" + q);
+    $("#cl_count").textContent = r.total + " cases";
+    $("#clBody").innerHTML = r.items.length ? r.items.map(c => '<tr><td class="mono">'+esc(c.human_reference || c.case_id)+'</td><td>'+esc(c.title)+'</td><td><span class="tag">'+esc(c.status)+'</span></td><td>'+esc(c.priority || "-")+'</td><td>'+esc(c.crime_category || "-")+'</td><td class="muted mono">'+esc((c.created_at||"").replace("T"," ").slice(0,19))+'</td></tr>').join("") : '<tr><td colspan="6" class="empty">No cases found.</td></tr>';
+    $("#cl_page").textContent = "Page " + clPage;
+    $("#cl_prev").disabled = clPage <= 1;
+    $("#cl_next").disabled = clPage * 20 >= r.total;
+  } catch (e) { toast(e.message); }
+}
+
 window.initTrustTabs = initTrustTabs;
+
+// Set up UI event listeners for case list
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    $("#cl_q").oninput = () => { clPage = 1; loadCaseList(); };
+    $("#cl_status").onchange = () => { clPage = 1; loadCaseList(); };
+    $("#cl_pri").onchange = () => { clPage = 1; loadCaseList(); };
+    $("#cl_cat").onchange = () => { clPage = 1; loadCaseList(); };
+    $("#cl_sort").onchange = () => { clPage = 1; loadCaseList(); };
+    $("#cl_prev").onclick = () => { if(clPage>1) { clPage--; loadCaseList(); } };
+    $("#cl_next").onclick = () => { clPage++; loadCaseList(); };
+  }, 1000);
+});

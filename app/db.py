@@ -66,7 +66,7 @@ def init_db() -> None:
     conn = connect()
     conn.executescript(SCHEMA)
     cols = [r[1] for r in conn.execute("PRAGMA table_info(cases)").fetchall()]
-    for col, ctype in [("human_ref", "TEXT"), ("fir_number", "TEXT"), ("crime_category", "TEXT"),
+    for col, ctype in [("human_reference", "TEXT"), ("fir_number", "TEXT"), ("crime_category", "TEXT"),
                        ("unit", "TEXT"), ("description", "TEXT"), ("priority", "TEXT"),
                        ("created_by", "TEXT"), ("legal_hold", "INTEGER DEFAULT 0")]:
         if col not in cols:

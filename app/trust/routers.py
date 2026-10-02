@@ -31,7 +31,16 @@ def assign_member(case_id: str, username: str = Form(...), role: str = Form(...)
         now = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
         c.execute("INSERT OR REPLACE INTO case_members (case_id, user_id, case_role, assigned_by, assigned_at) VALUES (?, ?, ?, ?, ?)",
                   (case_id, u["user_id"], role, user["username"], now))
-        custody.append(c, actor=user["username"], action="MEMBER_ASSIGNED", case_id=case_id, detail={"assigned": username, "role": role})
+        custody.append(c, actor=user["username"], action="member_assigned", case_id=case_id, detail={"assigned": username, "role": role})
+        return {"status": "ok"}
+
+@router.delete("/api/cases/{case_id}/members/{username}")
+def remove_member(case_id: str, username: str, user: dict = Depends(require_permission("case:assign"))):
+    with db.session() as c:
+        u = c.execute("SELECT user_id FROM users WHERE username=?", (username,)).fetchone()
+        if not u: raise HTTPException(404, "User not found")
+        c.execute("DELETE FROM case_members WHERE case_id=? AND user_id=?", (case_id, u["user_id"]))
+        custody.append(c, actor=user["username"], action="member_removed", case_id=case_id, detail={"removed": username})
         return {"status": "ok"}
 
 # ================= audit =================

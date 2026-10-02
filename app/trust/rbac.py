@@ -7,9 +7,9 @@ from app import db, auth
 
 PERMISSIONS = {
     "admin": ["case:create", "case:read", "case:assign", "case:update", "case:close", "evidence:upload", "evidence:read", "finding:write", "sandbox:run", "audit:read", "audit:verify", "audit:export", "user:manage"],
-    "investigator": ["case:create", "case:read", "case:assign", "case:update", "case:close", "evidence:upload", "evidence:read", "finding:write", "sandbox:run"],
+    "investigator": ["case:create", "case:read", "case:assign", "case:update", "evidence:upload", "evidence:read", "finding:write", "sandbox:run"],
     "examiner": ["case:read", "evidence:upload", "evidence:read", "finding:write", "sandbox:run"],
-    "supervisor": ["case:read", "case:close", "audit:read", "audit:verify"],
+    "supervisor": ["case:read", "case:update", "case:close", "audit:read", "audit:verify"],
     "reviewer": ["case:read", "evidence:read", "finding:read", "audit:read"],
     "auditor": ["case:read", "audit:read", "audit:verify", "audit:export"],
 }
