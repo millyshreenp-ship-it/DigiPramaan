@@ -26,14 +26,25 @@ def append(conn, *, actor: str, action: str, case_id=None, evidence_id=None, det
          json.dumps(body["detail"], sort_keys=True, ensure_ascii=False), prev, h))
     return {**body, "prev_hash": prev, "entry_hash": h}
 
-def verify_chain(conn) -> dict:
+def verify_chain(conn, case_id=None) -> dict:
     prev = GENESIS
     n = 0
+    case_n = 0
     for r in conn.execute("SELECT * FROM custody_log ORDER BY seq"):
         body = {"ts": r["ts"], "case_id": r["case_id"], "evidence_id": r["evidence_id"],
                 "actor": r["actor"], "action": r["action"], "detail": json.loads(r["detail"] or "{}")}
-        if r["prev_hash"] != prev or _digest(prev, body) != r["entry_hash"]:
-            return {"intact": False, "entries_checked": n, "first_broken_seq": r["seq"], "head": prev}
+        
+        expected = _digest(prev, body)
+        if r["prev_hash"] != prev or expected != r["entry_hash"]:
+            return {"valid": False, "intact": False, "entries_checked": n, "first_broken_seq": r["seq"], 
+                    "expected_hash": expected, "found_hash": r["entry_hash"], "head": prev}
+        
+        if case_id is None or r["case_id"] == case_id:
+            case_n += 1
+            
         prev = r["entry_hash"]
         n += 1
-    return {"intact": True, "entries_checked": n, "first_broken_seq": None, "head": prev}
+        
+    return {"valid": True, "intact": True, "entries_checked": case_n if case_id else n, 
+            "first_broken_seq": None, "expected_hash": None, "found_hash": None,
+            "global_entries_checked": n, "head": prev}

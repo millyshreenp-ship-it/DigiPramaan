@@ -53,6 +53,16 @@ CREATE TABLE IF NOT EXISTS case_members (
   case_role TEXT NOT NULL, assigned_by TEXT NOT NULL, assigned_at TEXT NOT NULL,
   PRIMARY KEY (case_id, user_id)
 );
+CREATE TRIGGER IF NOT EXISTS custody_log_no_update
+BEFORE UPDATE ON custody_log
+BEGIN
+  SELECT RAISE(ABORT, 'Updates to custody_log are prohibited');
+END;
+CREATE TRIGGER IF NOT EXISTS custody_log_no_delete
+BEFORE DELETE ON custody_log
+BEGIN
+  SELECT RAISE(ABORT, 'Deletions from custody_log are prohibited');
+END;
 """
 
 def connect() -> sqlite3.Connection:

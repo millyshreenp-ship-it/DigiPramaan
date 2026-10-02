@@ -76,10 +76,27 @@ const TRUST_HTML = `
   </section>
 
   <section id="paneAudit" hidden>
-    <div class="toolbar"><span id="gChainBadge"></span>
-      <button class="btn line sm" id="gExportBtn">Export Signed Audit Trail</button>
+    <h2>Global Audit Trail</h2>
+    <div class="toolbar" id="auditFilters">
+      <input type="search" id="g_actor" placeholder="Actor (e.g. admin)">
+      <input type="search" id="g_action" placeholder="Action (e.g. case_created)">
+      <input type="search" id="g_case" placeholder="Case ID">
+      <label class="muted" style="font-size:12px">From <input type="datetime-local" id="g_from"></label>
+      <label class="muted" style="font-size:12px">To <input type="datetime-local" id="g_to"></label>
+      <button class="btn sm" id="gFilterBtn">Filter</button>
+      <button class="btn line sm" id="gClearBtn">Clear</button>
     </div>
-    <div class="scroll"><table><thead><tr><th>#</th><th>When (UTC)</th><th>Who</th><th>Action</th><th>Case</th><th>Evidence</th><th>Detail</th><th>Entry hash</th></tr></thead><tbody id="gAuditBody"></tbody></table></div>
+    <div class="toolbar" style="border-top:1px solid #CFD7DF;margin-top:10px">
+      <span id="gChainBadge"></span>
+      <button class="btn line sm" id="gVerifyBtn">Verify Chain</button>
+      <button class="btn line sm" id="gExportBtn">Export JSON/CSV</button>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Seq</th><th>When (UTC)</th><th>Actor</th><th>Action</th><th>Case / Evidence</th><th>Detail & Hash</th></tr></thead>
+        <tbody id="gAuditBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="paneSandbox" hidden>
@@ -237,14 +254,56 @@ async function loadPermissions() {
   $("#permTable").innerHTML = html;
 }
 
+let gAuditData = { entries: [], chain: {} };
+
 async function loadAudit() {
   if (!can(["admin", "auditor"])) return;
   try {
     const r = await api("/api/audit");
-    $("#gChainBadge").className = "badge " + (r.chain.valid ? "VERIFIED" : "TAMPERED");
-    $("#gChainBadge").textContent = r.chain.valid ? "Global Chain Verified" : "GLOBAL CHAIN BROKEN: " + r.chain.reason;
-    $("#gAuditBody").innerHTML = r.entries.map(e => '<tr><td class="mono muted">'+e.seq+'</td><td class="mono muted">'+esc(e.timestamp.replace("T"," ").slice(0,19))+'</td><td>'+esc(e.actor)+'</td><td><span class="tag">'+esc(e.action)+'</span></td><td>'+esc(e.case_id || "-")+'</td><td>'+esc(e.evidence_id || "-")+'</td><td><pre>'+esc(JSON.stringify(e.detail,null,1))+'</pre></td><td class="mono muted" style="font-size:10px">'+esc(e.entry_hash)+'</td></tr>').join("");
-  } catch (e) { $("#gAuditBody").innerHTML = '<tr><td colspan="8" class="empty">'+esc(e.message)+'</td></tr>'; }
+    gAuditData = r;
+    renderAudit();
+  } catch (e) { $("#gAuditBody").innerHTML = '<tr><td colspan="6" class="empty">'+esc(e.message)+'</td></tr>'; }
+}
+
+function renderAudit() {
+  let entries = gAuditData.entries;
+  
+  const fAct = $("#g_actor").value.toLowerCase();
+  const fAction = $("#g_action").value.toLowerCase();
+  const fCase = $("#g_case").value.toLowerCase();
+  const fFrom = $("#g_from").value;
+  const fTo = $("#g_to").value;
+  
+  entries = entries.filter(e => {
+    if (fAct && !(e.actor || "").toLowerCase().includes(fAct)) return false;
+    if (fAction && !(e.action || "").toLowerCase().includes(fAction) && !(e.action || "").toUpperCase().includes(fAction)) return false;
+    if (fCase && !(e.case_id || "").toLowerCase().includes(fCase)) return false;
+    if (fFrom && e.ts < fFrom) return false;
+    if (fTo && e.ts > fTo) return false;
+    return true;
+  });
+  
+  const chain = gAuditData.chain;
+  $("#gChainBadge").className = "badge " + (chain.valid ? "VERIFIED" : "TAMPERED");
+  $("#gChainBadge").innerHTML = chain.valid ? `Chain intact &middot; ${chain.entries_checked} entries checked` : `CHAIN BROKEN at entry ${chain.first_broken_seq}`;
+  
+  $("#gAuditBody").innerHTML = entries.map(e => {
+    const broken = !chain.valid && e.seq >= chain.first_broken_seq;
+    const stripColor = broken ? "var(--bad)" : "var(--ok)";
+    return `<tr>
+      <td class="mono muted"><div style="display:inline-block;width:4px;height:12px;background:${stripColor};margin-right:4px;border-radius:2px;vertical-align:middle"></div>${e.seq}</td>
+      <td class="mono muted">${esc((e.ts||"").replace("T"," ").slice(0,19))}</td>
+      <td>${esc(e.actor)}</td>
+      <td><span class="tag">${esc(e.action)}</span></td>
+      <td class="mono muted" style="font-size:12px">${esc(e.case_id || "-")}</td>
+      <td>
+        <details><summary class="muted mono" style="font-size:11px;cursor:pointer">Hash: ${esc((e.entry_hash||"").substring(0, 16))}...</summary>
+        <div class="mono muted" style="font-size:10px;margin-top:4px;word-break:break-all">${esc(e.entry_hash)}</div>
+        <pre style="margin-top:4px;background:#f6f8fa;padding:6px;border-radius:4px;font-size:11px">${esc(JSON.stringify(e.detail,null,2))}</pre>
+        </details>
+      </td>
+    </tr>`;
+  }).join("");
 }
 
 let clPage = 1;
@@ -268,15 +327,42 @@ async function loadCaseList() {
 
 window.initTrustTabs = initTrustTabs;
 
-// Set up UI event listeners for case list
+// Set up UI event listeners for case list and audit
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
-    $("#cl_q").oninput = () => { clPage = 1; loadCaseList(); };
-    $("#cl_status").onchange = () => { clPage = 1; loadCaseList(); };
-    $("#cl_pri").onchange = () => { clPage = 1; loadCaseList(); };
-    $("#cl_cat").onchange = () => { clPage = 1; loadCaseList(); };
-    $("#cl_sort").onchange = () => { clPage = 1; loadCaseList(); };
-    $("#cl_prev").onclick = () => { if(clPage>1) { clPage--; loadCaseList(); } };
-    $("#cl_next").onclick = () => { clPage++; loadCaseList(); };
+    if ($("#cl_q")) $("#cl_q").oninput = () => { clPage = 1; loadCaseList(); };
+    if ($("#cl_status")) $("#cl_status").onchange = () => { clPage = 1; loadCaseList(); };
+    if ($("#cl_pri")) $("#cl_pri").onchange = () => { clPage = 1; loadCaseList(); };
+    if ($("#cl_cat")) $("#cl_cat").onchange = () => { clPage = 1; loadCaseList(); };
+    if ($("#cl_sort")) $("#cl_sort").onchange = () => { clPage = 1; loadCaseList(); };
+    if ($("#cl_prev")) $("#cl_prev").onclick = () => { if(clPage>1) { clPage--; loadCaseList(); } };
+    if ($("#cl_next")) $("#cl_next").onclick = () => { clPage++; loadCaseList(); };
+    
+    // Audit Trail
+    if ($("#gFilterBtn")) {
+      $("#gFilterBtn").onclick = () => renderAudit();
+      $("#gClearBtn").onclick = () => {
+        $("#g_actor").value = ""; $("#g_action").value = ""; $("#g_case").value = ""; $("#g_from").value = ""; $("#g_to").value = "";
+        renderAudit();
+      };
+      $("#gVerifyBtn").onclick = async () => {
+        try {
+          const r = await api("/api/audit/verify");
+          $("#gChainBadge").className = "badge " + (r.valid ? "VERIFIED" : "TAMPERED");
+          $("#gChainBadge").innerHTML = r.valid ? `Verified! checked ${r.entries_checked} entries in ${r.elapsed_ms}ms` : `TAMPERED! First broken seq: ${r.first_broken_seq}`;
+        } catch (e) { toast("Verify failed: " + e.message); }
+      };
+      $("#gExportBtn").onclick = async () => {
+        try {
+          const r = await api("/api/audit/export");
+          const blob = new Blob([JSON.stringify(r.entries, null, 2)], {type: "application/json"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = "audit_trail.json"; a.click();
+          URL.revokeObjectURL(url);
+          toast("Exported " + r.entries.length + " rows");
+        } catch (e) { toast("Export failed: " + e.message); }
+      };
+    }
   }, 1000);
 });

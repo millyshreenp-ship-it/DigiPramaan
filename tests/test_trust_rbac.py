@@ -74,20 +74,20 @@ def test_list_cases():
     
     # Creator sees it
     res = client.get("/api/cases", cookies={"idff_session": inv_token})
-    assert len(res.json()["items"]) > 0
-    assert any(c["case_id"] == case_id for c in res.json()["items"])
+    assert len(res.json()) > 0
+    assert any(c["case_id"] == case_id for c in res.json())
 
     # Unassigned exam sees 0
     res = client.post("/api/auth/login", data={"username": "exam", "password": "password123"})
     exam_token = res.cookies["idff_session"]
     res = client.get("/api/cases", cookies={"idff_session": exam_token})
-    assert len(res.json()["items"]) == 0
+    assert len(res.json()) == 0
 
     # Admin sees it
     res = client.post("/api/auth/login", data={"username": "admin", "password": "password123"})
     admin_token = res.cookies["idff_session"]
     res = client.get("/api/cases", cookies={"idff_session": admin_token})
-    assert len(res.json()["items"]) == 1
+    assert len(res.json()) == 1
 
 def test_evidence_id_routes():
     inv_token, case_id = setup_users_and_case()

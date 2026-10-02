@@ -18,11 +18,17 @@ def create_case(title: str = Form(...), jurisdiction: str = Form(""), investigat
     case_id = "CASE-" + datetime.now().strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:4].upper()
     lead = investigator.strip() or user["full_name"] or user["username"]
     with db.session() as c:
+        if not human_reference:
+            year = datetime.now(timezone.utc).year
+            row = c.execute("SELECT human_reference FROM cases WHERE human_reference LIKE ? ORDER BY human_reference DESC LIMIT 1", (f"SUT-{year}-%",)).fetchone()
+            num = int(row[0].split("-")[-1]) + 1 if row else 1
+            human_reference = f"SUT-{year}-{num:04d}"
+            
         c.execute("INSERT INTO cases (case_id, title, jurisdiction, investigator, status, created_at, human_reference, fir_number, crime_category, unit, description, priority, created_by, legal_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                   (case_id, title.strip(), jurisdiction.strip(), lead, "Open", _now(), human_reference, fir_number, crime_category, unit, description, priority, user["username"], 0))
         c.execute("INSERT INTO case_members (case_id, user_id, case_role, assigned_by, assigned_at) VALUES (?, ?, ?, ?, ?)",
                   (case_id, user["user_id"], "lead", "system", _now()))
-        custody.append(c, actor=user["username"], action="case_created", case_id=case_id, detail={"title": title.strip()})
+        custody.append(c, actor=user["username"], action="case_created", case_id=case_id, detail={"title": title.strip(), "human_reference": human_reference})
     return {"case_id": case_id}
 
 @router.get("/api/cases")
@@ -65,7 +71,10 @@ def list_cases(request: Request, user: dict = ANY):
             
         total = c_db.execute(f"SELECT COUNT(DISTINCT c.case_id) {base_query}", params).fetchone()[0]
         items = [dict(r) for r in c_db.execute(f"SELECT DISTINCT c.* {base_query} ORDER BY c.{sort} LIMIT ? OFFSET ?", params + [per_page, offset]).fetchall()]
-        return {"total": total, "items": items, "page": page}
+        
+        if "page" in request.query_params:
+            return {"total": total, "items": items, "page": page}
+        return items
 
 @router.get("/api/cases/{case_id}")
 def get_case(case_id: str, user: dict = Depends(require_permission("case:read"))):
@@ -123,18 +132,25 @@ def change_case_status(case_id: str, status: str = Form(...), reason: str = Form
         if status not in valid_transitions.get(old_status, []):
             raise HTTPException(400, f"Invalid status transition from {old_status} to {status}.")
             
-        # Permission check
+        # Permission check & Workflow
         from app.trust.rbac import PERMISSIONS
         if status in ("Closed", "Archived"):
             if "case:close" not in PERMISSIONS.get(user["role"], []) and user["role"] != "supervisor":
-                raise HTTPException(403, "Supervisor approval required to close or archive cases.")
+                if status == "Closed" and user["role"] == "investigator":
+                    status = "Pending Legal Review"
+                    c.execute("UPDATE cases SET status=? WHERE case_id=?", (status, case_id))
+                    custody.append(c, actor=user["username"], action="close_requested", case_id=case_id, detail={"old": old_status, "new": status, "reason": reason})
+                    return {"ok": True, "status": status}
+                else:
+                    raise HTTPException(403, "Supervisor approval required to archive cases.")
         else:
             if "case:update" not in PERMISSIONS.get(user["role"], []):
                 raise HTTPException(403, "Lacks permission to update case.")
                 
         c.execute("UPDATE cases SET status=? WHERE case_id=?", (status, case_id))
-        custody.append(c, actor=user["username"], action="case_status_changed", case_id=case_id, detail={"old": old_status, "new": status, "reason": reason})
-    return {"ok": True}
+        action = "case_closed" if status == "Closed" else "case_status_changed"
+        custody.append(c, actor=user["username"], action=action, case_id=case_id, detail={"old": old_status, "new": status, "reason": reason})
+    return {"ok": True, "status": status}
 
 @router.post("/api/cases/{case_id}/legal_hold")
 def set_legal_hold(case_id: str, hold: int = Form(...), user: dict = Depends(require_permission("case:update"))):
