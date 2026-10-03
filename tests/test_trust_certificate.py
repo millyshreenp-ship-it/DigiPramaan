@@ -1,6 +1,5 @@
 import os
 import pytest
-from app import custody
 
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):

@@ -60,7 +60,6 @@ def test_export_bundle_permissions(test_client):
 
 def test_verify_tool_valid_and_tampered(test_client, tmp_path):
     from app.config import ANCHOR_INTERVAL
-    from app.trust.anchors import get_or_create_key
     import app.auth as auth
     
     with db.session() as c:

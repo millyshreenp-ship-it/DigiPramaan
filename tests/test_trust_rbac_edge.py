@@ -1,8 +1,5 @@
-import os
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
-from app import db, auth
 
 import sys
 import importlib
@@ -60,7 +57,7 @@ def test_middleware_edge_cases():
         f"/api/cases/{case_id}/",
         f"/api/cases//{case_id}",
         f"/api//cases/{case_id}",
-        f"/api/cases/%43%41%53%45%2D%32%30%32%36%31%30%30%32%2D%43%32%43%33", # URL encoded
+        "/api/cases/%43%41%53%45%2D%32%30%32%36%31%30%30%32%2D%43%32%43%33", # URL encoded
     ]
     for v in variants:
         if "%" in v:

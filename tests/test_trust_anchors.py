@@ -1,10 +1,7 @@
 import os
 import pytest
 import sys
-from unittest.mock import patch
 import hashlib
-from cryptography.hazmat.primitives.asymmetric import ed25519
-from cryptography.hazmat.primitives import serialization
 
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):
@@ -185,7 +182,7 @@ def test_anchor_failure_recovery(app_db, monkeypatch):
             custody.append(c, actor="tester", action=f"test_{i}")
             
         # The next append will trigger the interval
-        res = custody.append(c, actor="tester", action="trigger_action")
+        custody.append(c, actor="tester", action="trigger_action")
         
     # The original trigger_action should succeed, and an anchor_failed event should be appended!
     with app_db.session() as c:

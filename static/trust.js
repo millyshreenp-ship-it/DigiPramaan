@@ -319,7 +319,7 @@ async function loadMembers() {
   if (!caseId) { $("#memBody").innerHTML = '<tr><td colspan="5" class="empty">No case selected.</td></tr>'; return; }
   try {
     const r = await api("/api/cases/" + encodeURIComponent(caseId) + "/members");
-    $("#memBody").innerHTML = r.length ? r.map(m => '<tr><td>'+esc(m.username)+'</td><td>'+esc(m.full_name)+'</td><td><span class="tag">'+esc(m.case_role)+'</span></td><td>'+esc(m.assigned_by)+'</td><td class="mono muted">'+esc(m.assigned_at.replace("T"," ").slice(0,19))+'</td><td><button class="btn sm line" onclick="removeMember(\\''+esc(m.username)+'\\')">Remove</button></td></tr>').join("") : '<tr><td colspan="6" class="empty">No members assigned explicitly.</td></tr>';
+    $("#memBody").innerHTML = r.length ? r.map(m => '<tr><td>'+esc(m.username)+'</td><td>'+esc(m.full_name)+'</td><td><span class="tag">'+esc(m.case_role)+'</span></td><td>'+esc(m.assigned_by)+'</td><td class="mono muted">'+esc(m.assigned_at.replace("T"," ").slice(0,19))+'</td><td><button class="btn sm line" onclick="removeMember(\''+esc(m.username)+'\')">Remove</button></td></tr>').join("") : '<tr><td colspan="6" class="empty">No members assigned explicitly.</td></tr>';
   } catch (e) { $("#memBody").innerHTML = '<tr><td colspan="6" class="empty">'+esc(e.message)+'</td></tr>'; }
 }
 

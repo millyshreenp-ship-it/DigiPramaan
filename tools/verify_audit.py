@@ -1,7 +1,6 @@
 import sys
 import json
 import hashlib
-from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 
 def compute_merkle_root(hashes):
@@ -49,8 +48,10 @@ def verify_bundle(bundle_path, key_path=None):
             expected = r['entry_hash']
         else:
             body = {"ts": r["ts"], "actor": r["actor"], "action": r["action"], "detail": json.loads(r["detail"])}
-            if r.get("case_id") is not None: body["case_id"] = r["case_id"]
-            if r.get("evidence_id") is not None: body["evidence_id"] = r["evidence_id"]
+            if r.get("case_id") is not None:
+                body["case_id"] = r["case_id"]
+            if r.get("evidence_id") is not None:
+                body["evidence_id"] = r["evidence_id"]
             canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
             expected = hashlib.sha256((prev + canon).encode("utf-8")).hexdigest()
             
