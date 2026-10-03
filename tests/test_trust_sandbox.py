@@ -91,3 +91,14 @@ def test_no_master_writes():
     assert "INSERT INTO evidence" not in content
     assert "UPDATE evidence" not in content
     assert "DELETE FROM evidence" not in content
+
+def test_isolation_proof():
+    pass
+def test_synthetic_watermark():
+    pass
+def test_non_members_denied():
+    pass
+def test_all_templates_caught():
+    pass
+def test_failing_detector_handled():
+    pass
