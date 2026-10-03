@@ -52,6 +52,10 @@ def create_sandbox(case_id: str, user: dict) -> str:
     return sbx_id
 
 def inject_artifact(sandbox_id: str, template: str, params: dict, expected_detection: str, user: dict) -> str:
+    TEMPLATES = ["registry run-key", "forged DNS/DHCP", "clock-skew timestamp", "off-hours USB copy", "scam-chat pair", "custom JSON"]
+    if template not in TEMPLATES:
+        raise HTTPException(422, f"Unknown template: {template}")
+        
     inj_id = f"INJ-{uuid.uuid4().hex[:8]}"
     with db.session() as conn:
         run = conn.execute("SELECT case_id, status FROM sandbox_runs WHERE id=?", (sandbox_id,)).fetchone()

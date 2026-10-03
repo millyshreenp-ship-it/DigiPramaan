@@ -108,7 +108,7 @@ const TRUST_HTML = `
   <section id="paneSandbox" hidden>
     <h2>Synthetic Sandbox</h2>
     <div class="pad form">
-      <div class="muted">Run synthetic injections in a "Digital Twin" of the case evidence. No actual execution or Docker containers are used.</div>
+      <div class="muted">Run synthetic injections in a "Digital Twin" of the case evidence. No actual execution is used.</div>
       <div class="wide" style="margin-bottom: 10px;">
         <button class="btn" id="sb_create">Create Sandbox</button>
         <span id="sb_id_display" class="mono muted" style="margin-left: 10px;"></span>
