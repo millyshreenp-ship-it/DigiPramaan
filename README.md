@@ -50,6 +50,19 @@ Three investigator-facing views built on the normalized events API:
 
 UI tabs: **Timeline**, **Evidence graph**, **Investigator query** (alongside the existing Parsed events list).
 
+## Person 3 — Trust Layer (Case Management & Audit)
+
+A unified RBAC, case lifecycle, immutable audit trail, and synthetic "Digital Twin" sandbox.
+
+1. **Case Management & RBAC**  
+   Cases progress through a strict lifecycle (`Open` -> `Under Analysis` -> `Pending Legal Review` -> `Closed`). Legal hold locks metadata. Strict RBAC assigns users to cases as `lead`, `investigator`, `supervisor`, `reviewer`, or `auditor`. Investigators can only *request* case closure; supervisors must *approve* it.
+
+2. **Immutable Audit Trail**  
+   Every action (login, case changes, evidence intake) is hash-chained. The trail is anchored in a Merkle Tree (`tools/verify_audit.py` can verify offline). Supports JSON/CSV exports and generates a cryptographically sound PDF Certificate of Integrity. An interactive "Simulate Tamper" button demonstrates the chain breaking.
+
+3. **Synthetic Sandbox**  
+   A "Digital Twin" approach to test AI detectors against injected adversarial artifacts (e.g. clock skew, forged DNS) without executing untrusted code or altering the master evidence chain. Proves isolation via an unchanged Master Manifest hash.
+
 ## Deploying for real use
 1. Serve behind an HTTPS reverse proxy (nginx/Caddy) and set `FORENSIC_COOKIE_SECURE=1`. Do not expose plain HTTP on a network.
 2. Put `FORENSIC_DATA_DIR` on encrypted storage and back it up; the database and vault must be backed up together.
