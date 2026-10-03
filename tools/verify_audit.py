@@ -42,16 +42,21 @@ def verify_bundle(bundle_path, key_path=None):
         public_key = serialization.load_pem_public_key(pub_bytes)
     
     prev = "0" * 64
+    redacted_count = 0
     for r in entries:
-        body = {"ts": r["ts"], "actor": r["actor"], "action": r["action"], "detail": json.loads(r["detail"])}
-        if r.get("case_id") is not None: body["case_id"] = r["case_id"]
-        if r.get("evidence_id") is not None: body["evidence_id"] = r["evidence_id"]
-        canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-        expected = hashlib.sha256((prev + canon).encode("utf-8")).hexdigest()
-        
-        if expected != r['entry_hash']:
-            print(f"Verification failed: Chain broken at seq {r['seq']}")
-            sys.exit(1)
+        if r["detail"] == '{"redacted": true}':
+            redacted_count += 1
+            expected = r['entry_hash']
+        else:
+            body = {"ts": r["ts"], "actor": r["actor"], "action": r["action"], "detail": json.loads(r["detail"])}
+            if r.get("case_id") is not None: body["case_id"] = r["case_id"]
+            if r.get("evidence_id") is not None: body["evidence_id"] = r["evidence_id"]
+            canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            expected = hashlib.sha256((prev + canon).encode("utf-8")).hexdigest()
+            
+            if expected != r['entry_hash']:
+                print(f"Verification failed: Chain broken at seq {r['seq']}")
+                sys.exit(1)
         prev = expected
         
     # 2. Verify anchors
@@ -90,6 +95,8 @@ def verify_bundle(bundle_path, key_path=None):
             print(f"Verification failed: Signature invalid at anchor {a['id']}")
             sys.exit(1)
             
+    if redacted_count > 0:
+        print(f"content hash not recomputable for {redacted_count} redacted entries")
     print("Verification passed")
     sys.exit(0)
 

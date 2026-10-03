@@ -103,6 +103,10 @@ def create_anchor(user: dict = Depends(require_permission("audit:verify"))):
 @router.get("/api/audit/bundle")
 def export_bundle(redacted: bool = False, user: dict = Depends(require_permission("audit:read"))):
     from app.trust.rbac import PERMISSIONS
+    
+    if user["role"] == "auditor":
+        redacted = True
+        
     if not redacted and "audit:export" not in PERMISSIONS.get(user["role"], []):
         raise HTTPException(403, "Role lacks permission for unredacted export")
         

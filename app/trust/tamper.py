@@ -45,8 +45,8 @@ def simulate_tamper(user: dict = Depends(require_permission("audit:verify"))):
             "field": "action",
             "result": "FAIL" if not result["valid"] else "PASS",
             "first_broken_seq": tampered_seq,
-            "expected_hash": result.get("expected", ""),
-            "found_hash": result.get("found", "")
+            "expected_hash": result.get("expected_hash", ""),
+            "found_hash": result.get("found_hash", "")
         }
     finally:
         dest.close()

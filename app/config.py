@@ -15,6 +15,7 @@ LOGIN_WINDOW_SECONDS = 15 * 60
 TOOL_NAME = "IDFF-Intake"
 TOOL_VERSION = "1.0.0"
 CHUNK = 1024 * 1024  # hashing streams 1 MiB at a time; a large image never sits in RAM
+ANCHOR_INTERVAL = int(os.environ.get("ANCHOR_INTERVAL", 50))
 
 def ensure_dirs() -> None:
     VAULT_DIR.mkdir(parents=True, exist_ok=True)
