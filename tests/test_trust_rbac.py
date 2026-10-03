@@ -1,8 +1,6 @@
-import os
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app, _get_case
-from app import db, auth
+from app.main import app
 
 client = TestClient(app, headers={"X-Requested-With": "idff"})
 
@@ -124,7 +122,6 @@ def test_permissions_matrix():
     assert "admin" in res.json()
 
 def test_route_enumeration_for_leaks():
-    import re
     # We want to make sure all routes are protected
     # Either they don't use case_id, or they do and middleware catches them, or they are evidence_id routes and they call check_evidence_access
     # We will do a static analysis check basically, or hit them with unassigned token

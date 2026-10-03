@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
 import pytest
-from app import db, auth
 
 client = TestClient(app, headers={"X-Requested-With": "idff"})
 
@@ -9,7 +8,8 @@ client = TestClient(app, headers={"X-Requested-With": "idff"})
 def strict_mode_edge(monkeypatch, tmp_path):
     monkeypatch.setenv("FORENSIC_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("LEGACY_OPEN_ACCESS", "0")
-    import sys, importlib
+    import sys
+    import importlib
     for m in [m for m in sys.modules if m == "app" or m.startswith("app.")]:
         del sys.modules[m]
     global app, db, auth, client

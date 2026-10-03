@@ -25,7 +25,7 @@ def detect(events: List[Dict[str, Any]]) -> List[Detection]:
             mod = importlib.import_module(mod_name)
             func = getattr(mod, func_name)
             return func(events)
-        except Exception as e:
+        except Exception:
             # handled gracefully, fallback to rule-based
             pass
 

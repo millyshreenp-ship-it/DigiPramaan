@@ -146,7 +146,8 @@ def test_atomicity_audit_fail(monkeypatch):
 
 
 def test_pre_upgrade_chain(monkeypatch, tmp_path):
-    import sqlite3, json, hashlib
+    import sqlite3
+    import json
     # Mock db path to fresh db
     db_path = str(tmp_path / "legacy.db")
     monkeypatch.setattr("app.config.DB_PATH", db_path)
@@ -281,7 +282,8 @@ def test_action_name_filters(monkeypatch):
     assert all(e["action"] == "case_created" for e in res.json()["entries"])
     
 def test_timing_10k_entries():
-    import sqlite3, time
+    import sqlite3
+    import time
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
     conn.execute("""

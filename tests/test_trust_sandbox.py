@@ -8,7 +8,7 @@ import hashlib
 import os
 
 from app.main import app
-from app import db, custody
+from app import db
 
 client = TestClient(app, headers={"X-Requested-With": "idff"})
 
@@ -207,7 +207,7 @@ def test_sandbox_no_leakage(sandbox_env):
     cert = client.get(f"/api/cases/{case_id}/certificate")
     assert b"UNIQUE_MARKER" not in cert.content
     
-    bundle = client.get(f"/api/audit/bundle")
+    bundle = client.get("/api/audit/bundle")
     assert b"UNIQUE_MARKER" not in bundle.content
 
 def test_sandbox_audit_events_in_transaction(sandbox_env):

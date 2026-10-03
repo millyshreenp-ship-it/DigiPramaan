@@ -74,8 +74,8 @@ def test_certificate_generation_auditor(test_client):
 def test_certificate_generation_denied(test_client):
     import app.auth as auth
     
-    # investigator does not have audit:export
-    app.dependency_overrides[auth.current_user] = lambda: {"username": "inv1", "role": "investigator"}
+    # user is not a member of the case
+    app.dependency_overrides[auth.current_user] = lambda: {"username": "rando", "role": "reviewer", "user_id": "U999"}
     try:
         res = test_client.get("/api/cases/case1/certificate")
         assert res.status_code == 403

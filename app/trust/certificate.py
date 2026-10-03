@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 from app.trust.rbac import require_permission, get_case_or_403
 from app import config, db, custody
@@ -12,7 +12,7 @@ from reportlab.graphics.shapes import Drawing
 router = APIRouter()
 
 @router.get("/api/cases/{case_id}/certificate")
-def generate_certificate(case_id: str, user: dict = Depends(require_permission("audit:export"))):
+def generate_certificate(case_id: str, user: dict = Depends(require_permission("case:read"))):
     get_case_or_403(case_id, user)
     
     cert_dir = os.path.join(config.DATA_DIR, "certificates")
