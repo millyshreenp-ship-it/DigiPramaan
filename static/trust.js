@@ -271,7 +271,7 @@ function initTrustTabs(registerTab) {
     if (!currentSandbox) return;
     try {
       const tpl = $("#sb_template").value;
-      const r = await api("/api/sandbox/" + encodeURIComponent(currentSandbox) + "/inject", {
+      const r = await api("/api/cases/" + encodeURIComponent(caseId) + "/sandbox/" + encodeURIComponent(currentSandbox) + "/inject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ template: tpl, params: { title: "Injected " + tpl }, expected_detection_type: tpl })
@@ -286,7 +286,7 @@ function initTrustTabs(registerTab) {
     if (!currentSandbox) return;
     $("#sb_run").disabled = true; $("#sb_run").textContent = "Running...";
     try {
-      const r = await api("/api/sandbox/" + encodeURIComponent(currentSandbox) + "/run", { method: "POST" });
+      const r = await api("/api/cases/" + encodeURIComponent(caseId) + "/sandbox/" + encodeURIComponent(currentSandbox) + "/run", { method: "POST" });
       $("#score_injected").textContent = r.injected;
       $("#score_detected").textContent = r.detected;
       $("#score_tp").textContent = r.true_positives;
@@ -303,7 +303,7 @@ function initTrustTabs(registerTab) {
   $("#sb_destroy").onclick = async () => {
     if (!currentSandbox) return;
     try {
-      await api("/api/sandbox/" + encodeURIComponent(currentSandbox), { method: "DELETE" });
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/sandbox/" + encodeURIComponent(currentSandbox), { method: "DELETE" });
       currentSandbox = null;
       $("#sb_id_display").textContent = "";
       $("#sb_inject_panel").hidden = true;

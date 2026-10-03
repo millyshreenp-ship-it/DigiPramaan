@@ -55,11 +55,11 @@ def test_sandbox_lifecycle():
     assert res.status_code == 200
     sbx_id = res.json()["sandbox_id"]
     
-    res = client.post(f"/api/sandbox/{sbx_id}/inject", json={"template": "clock_skew", "params": {"title": "Clock skewed event"}}, cookies={"idff_session": inv_token}, headers={"X-Requested-With": "idff"})
+    res = client.post(f"/api/cases/{case_id}/sandbox/{sbx_id}/inject", json={"template": "clock_skew", "params": {"title": "Clock skewed event"}}, cookies={"idff_session": inv_token}, headers={"X-Requested-With": "idff"})
     assert res.status_code == 200
     inj_id = res.json()["injection_id"]
     
-    res = client.post(f"/api/sandbox/{sbx_id}/run", cookies={"idff_session": inv_token}, headers={"X-Requested-With": "idff"})
+    res = client.post(f"/api/cases/{case_id}/sandbox/{sbx_id}/run", cookies={"idff_session": inv_token}, headers={"X-Requested-With": "idff"})
     assert res.status_code == 200
     data = res.json()
     assert data["injected"] == 1
@@ -67,7 +67,7 @@ def test_sandbox_lifecycle():
     assert data["true_positives"] >= 0
     assert data["isolation_status"] == "Master evidence unchanged"
     
-    res = client.delete(f"/api/sandbox/{sbx_id}", cookies={"idff_session": inv_token}, headers={"X-Requested-With": "idff"})
+    res = client.delete(f"/api/cases/{case_id}/sandbox/{sbx_id}", cookies={"idff_session": inv_token}, headers={"X-Requested-With": "idff"})
     assert res.status_code == 200
     
 def test_sandbox_closed_case():
