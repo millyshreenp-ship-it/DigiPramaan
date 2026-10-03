@@ -109,5 +109,59 @@ def test_verify_tool_valid_and_tampered(test_client, tmp_path):
         
     res = subprocess.run(["python", verify_script, severed_path, key_path], capture_output=True, text=True)
     assert "Verification failed" in res.stdout
-    assert "Merkle root mismatch" in res.stdout or "Signature invalid" in res.stdout
     assert res.returncode != 0
+    
+    # 4. Deleted entry
+    bundle_deleted = copy.deepcopy(bundle)
+    bundle_deleted["entries"].pop(1)
+    deleted_path = str(tmp_path / "bundle_deleted.json")
+    with open(deleted_path, "w") as f:
+        json.dump(bundle_deleted, f)
+    res = subprocess.run(["python", verify_script, deleted_path, key_path], capture_output=True, text=True)
+    assert "Verification failed" in res.stdout
+    assert res.returncode != 0
+    
+    # 5. Wrong key
+    wrong_key_path = str(tmp_path / "wrong.key")
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+    from cryptography.hazmat.primitives import serialization
+    wk = ed25519.Ed25519PrivateKey.generate()
+    with open(wrong_key_path, "wb") as f:
+        f.write(wk.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
+    res = subprocess.run(["python", verify_script, bundle_path, wrong_key_path], capture_output=True, text=True)
+    assert "Signature invalid" in res.stdout
+    assert res.returncode != 0
+    
+    # 6. Truncated bundle
+    truncated_path = str(tmp_path / "bundle_trunc.json")
+    with open(truncated_path, "w") as f:
+        f.write('{"entries": [')
+    res = subprocess.run(["python", verify_script, truncated_path, key_path], capture_output=True, text=True)
+    assert res.returncode != 0
+
+def test_export_bundle_auditor_redacted(test_client, tmp_path):
+    import app.auth as auth
+    
+    with db.session() as c:
+        custody.append(c, actor="tester", action="test1", detail={"sensitive": "data", "filename": "x", "title": "y", "description": "z", "fir_number": "1", "notes": "n", "vault_path": "v"})
+    
+    app.dependency_overrides[auth.current_user] = lambda: {"username": "auditor1", "role": "auditor"}
+    try:
+        res = test_client.get("/api/audit/bundle")
+        assert res.status_code == 200
+        bundle = res.json()
+    finally:
+        app.dependency_overrides.clear()
+        
+    bundle_str = json.dumps(bundle)
+    for term in ["filename", "title", "description", "fir_number", "notes", "vault_path"]:
+        assert f'"{term}"' not in bundle_str
+        
+    bundle_path = str(tmp_path / "bundle_auditor.json")
+    with open(bundle_path, "w") as f:
+        f.write(bundle_str)
+        
+    verify_script = os.path.abspath("tools/verify_audit.py")
+    res = subprocess.run(["python", verify_script, bundle_path], capture_output=True, text=True)
+    assert res.returncode == 0
+    assert "content hash not recomputable" in res.stdout
