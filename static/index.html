@@ -80,7 +80,7 @@
   .err{color:var(--bad);font-size:13.5px;min-height:1.2em}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-  /* Person 2 — Timeline & Correlation */
+  /* Timeline & Correlation */
   .tl-bucket{border-left:3px solid var(--steel);margin:0 0 12px 8px;padding:0 0 0 14px}
   .tl-bucket header{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
   .tl-bucket header .when{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
@@ -204,7 +204,7 @@
   </section>
 
 
-  <!-- Person 2: Unified timeline -->
+  <!-- Unified timeline -->
   <section id="paneTimeline" hidden>
     <h2>Unified timeline
       <span class="grow"></span>
@@ -227,7 +227,7 @@
     </div>
   </section>
 
-  <!-- Person 2: Evidence graph -->
+  <!-- Evidence graph -->
   <section id="paneGraph" hidden>
     <h2>Evidence graph
       <span class="grow"></span>
@@ -246,7 +246,7 @@
     </div>
   </section>
 
-  <!-- Person 2: Investigator query -->
+  <!-- Investigator query -->
   <section id="paneQuery" hidden>
     <h2>Investigator query
       <span class="grow"></span>
@@ -564,7 +564,7 @@ async function resetPw(id) {
 
 async function refreshAll() { await Promise.all([loadEvidence(), loadEvents(), loadCustody()]).catch(e => toast(e.message)); if (!$("#paneTimeline").hidden) loadTimeline(); if (!$("#paneGraph").hidden) loadGraph(); if (!$("#paneQuery").hidden) loadQuery(); }
 
-// ================= Person 2: Timeline =================
+// ================= Timeline =================
 const LANE_COLORS = ["#244B6B","#0B7A62","#8A5A00","#5B3A8C","#B3261E","#1A6B8A","#6B5B2A"];
 let skewState = {}; // evidence_id -> seconds
 
@@ -636,7 +636,7 @@ $("#tlApplySkew").onclick = () => {
 };
 $("#tlClearSkew").onclick = () => { skewState = {}; loadTimeline(); };
 
-// ================= Person 2: Evidence graph =================
+// ================= Evidence graph =================
 async function loadGraph() {
   if (!caseId) { $("#graphCanvas").innerHTML = ""; $("#graphStats").textContent = ""; return; }
   const r = await api(`/api/cases/${encodeURIComponent(caseId)}/graph?max_events=400`);
@@ -757,7 +757,7 @@ function renderGraphPositions(nodes, edges, pos, W, H, canvas, typeColor, typeR,
   canvas.innerHTML = svg;
 }
 
-// ================= Person 2: Investigator query =================
+// ================= Investigator query =================
 let iqPage = 0, IQ_PAGE = 100, iqSelectedTypes = new Set();
 
 async function loadQuery() {

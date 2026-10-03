@@ -1,7 +1,7 @@
 """Chain-of-custody log: every acquire / verify / parse action is appended as a hash-linked entry.
 
 entry_hash = SHA256(prev_hash || canonical_json(entry)). Editing or deleting any past row breaks every
-hash after it, which verify_chain() detects. This is the hook point for Person 4's audit trail."""
+hash after it, which verify_chain() detects. This is the hook point for 's audit trail."""
 import hashlib, json
 from datetime import datetime, timezone
 

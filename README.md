@@ -35,7 +35,7 @@ python3 -m pytest tests -q    # 21 tests
 - Add a parser: subclass `BaseParser` in `app/parsers/`, implement `can_parse` and `parse`, decorate with `@register`, import it in `app/parsers/__init__.py`.
 
 
-## Person 2 — Timeline & Correlation (prototype)
+## Timeline & Correlation (prototype)
 
 Three investigator-facing views built on the normalized events API:
 
@@ -50,7 +50,7 @@ Three investigator-facing views built on the normalized events API:
 
 UI tabs: **Timeline**, **Evidence graph**, **Investigator query** (alongside the existing Parsed events list).
 
-## Person 3 — Trust Layer (Case Management & Audit)
+## Trust Layer (Case Management & Audit)
 
 A unified RBAC, case lifecycle, immutable audit trail, and synthetic "Digital Twin" sandbox.
 
