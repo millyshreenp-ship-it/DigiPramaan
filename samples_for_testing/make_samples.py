@@ -1,5 +1,5 @@
 """Generates a small, internally consistent demo scenario: 'office file copied to USB at ~22:30 IST'.
-All three sources describe the same night so 's timeline has real cross-source correlation to show."""
+All three sources describe the same night so Person 2's timeline has real cross-source correlation to show."""
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import random
