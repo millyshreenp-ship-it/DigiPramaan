@@ -54,7 +54,10 @@ const TRUST_HTML = `
         </select>
       </label>
       <label class="f wide">Reason for change<input id="co_status_reason" placeholder="Mandatory reason for audit log"></label>
-      <div class="wide"><button class="btn" id="co_status_btn">Change Status</button></div>
+      <div class="wide">
+        <button class="btn" id="co_status_btn">Change Status</button>
+        <button class="btn line" id="co_cert_btn" style="margin-left:15px">Download PDF Certificate</button>
+      </div>
     </div>
   </section>
   <section id="paneMembers" hidden>
@@ -89,7 +92,10 @@ const TRUST_HTML = `
     <div class="toolbar" style="border-top:1px solid #CFD7DF;margin-top:10px">
       <span id="gChainBadge"></span>
       <button class="btn line sm" id="gVerifyBtn">Verify Chain</button>
+      <button class="btn line sm" id="gAnchorBtn">Seal/Anchor Chain</button>
+      <button class="btn line sm" id="gBundleBtn">Download Bundle</button>
       <button class="btn line sm" id="gExportBtn">Export JSON/CSV</button>
+      <button class="btn line sm" id="gTamperBtn" style="color:var(--bad)">Simulate Tamper</button>
     </div>
     <div class="scroll">
       <table>
@@ -172,6 +178,8 @@ function initTrustTabs(registerTab) {
   };
   $("#co_status_btn").onclick = async () => {
     if(!caseId) return;
+    if(!$("#co_status_reason").value) return toast("Reason required");
+    if(!confirm("Change status to " + $("#co_status_new").value + "?")) return;
     try {
       await api("/api/cases/" + encodeURIComponent(caseId) + "/status", { method: "POST", body: form({
         status: $("#co_status_new").value, reason: $("#co_status_reason").value
@@ -179,8 +187,27 @@ function initTrustTabs(registerTab) {
       toast("Status changed."); $("#co_status_reason").value = ""; loadOverview();
     } catch(e) { toast(e.message); }
   };
+  $("#co_cert_btn").onclick = async () => {
+    if(!caseId) return;
+    try {
+      const res = await fetch("/api/cases/" + encodeURIComponent(caseId) + "/certificate", {
+        headers: { "X-Requested-With": "idff" }
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.detail || "Failed to generate certificate"); }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = caseId + "_certificate.pdf"; a.click();
+      URL.revokeObjectURL(url);
+      toast("Certificate downloaded.");
+    } catch (e) { toast(e.message); }
+  };
   $("#co_hold").onchange = async () => {
     if(!caseId) return;
+    if(!confirm("Toggle legal hold?")) {
+        $("#co_hold").checked = !$("#co_hold").checked;
+        return;
+    }
     try {
       await api("/api/cases/" + encodeURIComponent(caseId) + "/legal_hold", { method: "POST", body: form({ hold: $("#co_hold").checked ? 1 : 0 }) });
       toast("Legal hold updated.");
@@ -362,6 +389,33 @@ document.addEventListener("DOMContentLoaded", () => {
           URL.revokeObjectURL(url);
           toast("Exported " + r.entries.length + " rows");
         } catch (e) { toast("Export failed: " + e.message); }
+      };
+      $("#gAnchorBtn").onclick = async () => {
+        if (!confirm("Seal current chain with an anchor?")) return;
+        try {
+          const r = await api("/api/audit/anchor", { method: "POST" });
+          toast("Anchor generated. Seq: " + r.anchor.seq);
+          loadAudit();
+        } catch (e) { toast("Anchor failed: " + e.message); }
+      };
+      $("#gBundleBtn").onclick = async () => {
+        try {
+          const r = await api("/api/audit/bundle");
+          const blob = new Blob([JSON.stringify(r, null, 2)], {type: "application/json"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = "audit_bundle.json"; a.click();
+          URL.revokeObjectURL(url);
+          toast("Exported bundle with certs and anchors.");
+        } catch (e) { toast("Bundle failed: " + e.message); }
+      };
+      $("#gTamperBtn").onclick = async () => {
+        if (!confirm("Simulate tampering in the database? This breaks the chain.")) return;
+        try {
+          const r = await api("/api/audit/tamper-simulation", { method: "POST" });
+          toast("Tampered! Seq: " + r.tampered_seq + " Result: " + r.result);
+          loadAudit();
+        } catch (e) { toast("Tamper failed: " + e.message); }
       };
     }
   }, 1000);
