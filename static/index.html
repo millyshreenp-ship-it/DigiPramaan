@@ -80,7 +80,7 @@
   .err{color:var(--bad);font-size:13.5px;min-height:1.2em}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-  /* Person 2 — Timeline & Correlation */
+  /* Person 2 â€” Timeline & Correlation */
   .tl-bucket{border-left:3px solid var(--steel);margin:0 0 12px 8px;padding:0 0 0 14px}
   .tl-bucket header{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
   .tl-bucket header .when{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
@@ -813,6 +813,8 @@ let iqt; ["#iq_q","#iq_entity","#iq_etype","#iq_from","#iq_to"].forEach(sel => {
   const el = $(sel); if (el) el.oninput = () => { clearTimeout(iqt); iqt = setTimeout(() => { iqPage = 0; loadQuery(); }, 300); };
 });
 ["#iq_tq","#iq_ev"].forEach(sel => { const el = $(sel); if (el) el.onchange = () => { iqPage = 0; loadQuery(); }; });
+
+
 
 window.registerTab = (id, label, onShow) => {
   const nav = document.querySelector("nav[role='tablist']");
