@@ -64,16 +64,19 @@ def _neutralize_dict(d: dict) -> dict:
 
 # ================= audit =================
 @router.get("/api/audit")
-def global_audit_log(case_id: str = None, user: dict = Depends(require_permission("audit:read"))):
+def global_audit_log(case_id: str = None, action: str = None, user: dict = Depends(require_permission("audit:read"))):
     from app.trust.rbac import PERMISSIONS
     can_read_evidence = "evidence:read" in PERMISSIONS.get(user["role"], [])
     
     with db.session() as c:
-        query = "SELECT * FROM custody_log"
+        query = "SELECT * FROM custody_log WHERE 1=1"
         params = []
         if case_id:
-            query += " WHERE case_id=?"
+            query += " AND case_id=?"
             params.append(case_id)
+        if action:
+            query += " AND action COLLATE NOCASE = ?"
+            params.append(action)
         query += " ORDER BY seq DESC LIMIT 1000"
         
         rows = [dict(r) for r in c.execute(query, params)]
@@ -122,24 +125,4 @@ def verify_audit_chain(case_id: str = None, user: dict = Depends(require_permiss
         return result
 
 
-# ================= sandbox =================
-@router.post("/api/cases/{case_id}/sandbox/run")
-def run_sandbox(case_id: str, script: str = Form(...), image: str = Form("python:3.12-slim"), user: dict = Depends(require_permission("sandbox:run"))):
-    import subprocess
-    from app import config
-    # simplistic demo implementation for groundwork
-    try:
-        res = subprocess.run(["docker", "run", "--rm", "-i", "-v", f"{config.FORENSIC_DATA_DIR}:/data:ro", image, "python", "-c", script], capture_output=True, text=True, timeout=10)
-        out = res.stdout + res.stderr
-        exit_code = res.returncode
-    except Exception as e:
-        out = str(e); exit_code = -1
-    
-    with db.session() as c:
-        import uuid
-        ev_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-        c.execute("INSERT INTO evidence (evidence_id, case_id, filename, size, source_type, ingested_at) VALUES (?, ?, ?, ?, ?, ?)",
-                  (ev_id, case_id, "sandbox_output.txt", len(out), "sandbox_run", now))
-        custody.append(c, actor=user["username"], action="SANDBOX_RUN", case_id=case_id, evidence_id=ev_id, detail={"image": image, "exit_code": exit_code, "script_len": len(script)})
-        return {"evidence_id": ev_id, "exit_code": exit_code, "output": out}
+

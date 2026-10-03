@@ -108,14 +108,41 @@ const TRUST_HTML = `
   <section id="paneSandbox" hidden>
     <h2>Synthetic Sandbox</h2>
     <div class="pad form">
-      <div class="muted">Run a script in an isolated Docker container with the <code>FORENSIC_DATA_DIR</code> mounted read-only at <code>/data</code>.</div>
-      <label class="f">Docker Image<input id="sb_image" value="alpine:latest"></label>
-      <label class="f wide">Shell Script<textarea id="sb_script" rows="6" placeholder="#!/bin/sh&#10;ls -la /data"></textarea></label>
-      <div class="wide"><button class="btn" id="sb_run">Run in Sandbox</button></div>
+      <div class="muted">Run synthetic injections in a "Digital Twin" of the case evidence. No actual execution or Docker containers are used.</div>
+      <div class="wide" style="margin-bottom: 10px;">
+        <button class="btn" id="sb_create">Create Sandbox</button>
+        <span id="sb_id_display" class="mono muted" style="margin-left: 10px;"></span>
+      </div>
+      
+      <div id="sb_inject_panel" hidden>
+        <label class="f">Injection Template
+          <select id="sb_template">
+            <option value="clock_skew">Clock Skew</option>
+            <option value="off_hours_usb">Off-hours USB</option>
+            <option value="registry_autorun">Registry Autorun</option>
+            <option value="forged_dns">Forged DNS</option>
+            <option value="coercion_payment">Coercion Pattern</option>
+          </select>
+        </label>
+        <div class="wide" style="margin-bottom: 10px;">
+          <button class="btn line" id="sb_inject">Inject Artifact</button>
+          <span id="sb_inj_count" class="muted" style="margin-left: 10px;">0 artifacts injected</span>
+        </div>
+        <div class="wide">
+          <button class="btn" id="sb_run">Run Analysis</button>
+          <button class="btn bad" id="sb_destroy" style="margin-left: 10px;">Destroy</button>
+        </div>
+      </div>
     </div>
+    
     <div class="pad" id="sb_output_container" hidden>
-      <h3>Execution Result (Saved as Evidence <span id="sb_ev_id" class="mono"></span>)</h3>
-      <div class="muted">Exit code: <span id="sb_exit_code"></span></div>
+      <h3>Analysis Scoreboard</h3>
+      <table style="width: 100%; text-align: left; margin-bottom: 20px;">
+        <tr><th>Injected</th><td id="score_injected"></td><th>Isolation</th><td id="score_isolation"></td></tr>
+        <tr><th>Detected Total</th><td id="score_detected"></td><th>True Positives</th><td id="score_tp"></td></tr>
+        <tr><th>Missed</th><td id="score_missed"></td><th>False Positives</th><td id="score_fp"></td></tr>
+      </table>
+      <h4>Detections</h4>
       <pre id="sb_output" style="background:#111;color:#eee;padding:10px;border-radius:4px;overflow-x:auto;max-height:400px"></pre>
     </div>
   </section>
@@ -222,22 +249,68 @@ function initTrustTabs(registerTab) {
     } catch (e) { toast(e.message); }
   };
 
-  $("#sb_run").onclick = async () => {
+  let currentSandbox = null;
+  let injectCount = 0;
+
+  $("#sb_create").onclick = async () => {
     if (!caseId) return toast("Select a case first.");
-    $("#sb_run").disabled = true; $("#sb_run").textContent = "Running...";
-    $("#sb_output_container").hidden = true;
     try {
-      const r = await api("/api/cases/" + encodeURIComponent(caseId) + "/sandbox/run", {
-        method: "POST", body: form({ script: $("#sb_script").value, image: $("#sb_image").value })
-      });
-      $("#sb_ev_id").textContent = r.evidence_id;
-      $("#sb_exit_code").textContent = r.exit_code;
-      $("#sb_output").textContent = r.output;
-      $("#sb_output_container").hidden = false;
-      toast("Sandbox execution complete. Output saved as evidence.");
-      loadEvidence();
+      const r = await api("/api/cases/" + encodeURIComponent(caseId) + "/sandbox", { method: "POST" });
+      currentSandbox = r.sandbox_id;
+      injectCount = 0;
+      $("#sb_id_display").textContent = currentSandbox;
+      $("#sb_inject_panel").hidden = false;
+      $("#sb_inj_count").textContent = "0 artifacts injected";
+      $("#sb_create").disabled = true;
+      $("#sb_output_container").hidden = true;
+      toast("Sandbox created: " + currentSandbox);
     } catch (e) { toast(e.message); }
-    $("#sb_run").disabled = false; $("#sb_run").textContent = "Run in Sandbox";
+  };
+
+  $("#sb_inject").onclick = async () => {
+    if (!currentSandbox) return;
+    try {
+      const tpl = $("#sb_template").value;
+      const r = await api("/api/sandbox/" + encodeURIComponent(currentSandbox) + "/inject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template: tpl, params: { title: "Injected " + tpl }, expected_detection_type: tpl })
+      });
+      injectCount++;
+      $("#sb_inj_count").textContent = injectCount + " artifacts injected";
+      toast("Artifact injected: " + r.injection_id);
+    } catch (e) { toast(e.message); }
+  };
+
+  $("#sb_run").onclick = async () => {
+    if (!currentSandbox) return;
+    $("#sb_run").disabled = true; $("#sb_run").textContent = "Running...";
+    try {
+      const r = await api("/api/sandbox/" + encodeURIComponent(currentSandbox) + "/run", { method: "POST" });
+      $("#score_injected").textContent = r.injected;
+      $("#score_detected").textContent = r.detected;
+      $("#score_tp").textContent = r.true_positives;
+      $("#score_missed").textContent = r.missed;
+      $("#score_fp").textContent = r.false_positives;
+      $("#score_isolation").textContent = r.isolation_status;
+      $("#sb_output").textContent = JSON.stringify(r.detections, null, 2);
+      $("#sb_output_container").hidden = false;
+      toast("Analysis complete.");
+    } catch (e) { toast(e.message); }
+    $("#sb_run").disabled = false; $("#sb_run").textContent = "Run Analysis";
+  };
+
+  $("#sb_destroy").onclick = async () => {
+    if (!currentSandbox) return;
+    try {
+      await api("/api/sandbox/" + encodeURIComponent(currentSandbox), { method: "DELETE" });
+      currentSandbox = null;
+      $("#sb_id_display").textContent = "";
+      $("#sb_inject_panel").hidden = true;
+      $("#sb_create").disabled = false;
+      $("#sb_output_container").hidden = true;
+      toast("Sandbox destroyed.");
+    } catch (e) { toast(e.message); }
   };
 }
 

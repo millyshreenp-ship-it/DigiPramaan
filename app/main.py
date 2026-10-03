@@ -26,9 +26,13 @@ async def lifespan(_app):
 app = FastAPI(title="IDFF Evidence Intake & Integrity", version=config.TOOL_VERSION, lifespan=lifespan,
               docs_url=None, redoc_url=None)
 STATIC = Path(__file__).resolve().parent.parent / "static"
-from app.trust import routers as trust_routers, cases, rbac
+from app.trust import routers as trust_routers, cases, rbac, anchors, certificate, tamper, sandbox_routes
 app.include_router(trust_routers.router)
+app.include_router(anchors.router)
+app.include_router(certificate.router)
+app.include_router(tamper.router)
 app.include_router(cases.router)
+app.include_router(sandbox_routes.router)
 app.middleware("http")(rbac.case_access_middleware)
 
 WRITE_CASE = ("admin", "investigator", "supervisor")
