@@ -1,4 +1,4 @@
-"""Person 2 — Timeline & Correlation helpers.
+"""& Correlation helpers.
 
 Builds:
   - unified timeline (time-bucketed events + optional per-source clock skew)

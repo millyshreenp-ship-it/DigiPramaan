@@ -390,7 +390,7 @@ def events_csv(case_id: str, q: str = "", event_type: str = "", evidence_id: str
                              headers={"Content-Disposition": f'attachment; filename="{case_id}-events.csv"'})
 
 
-# ================= Person 2: Timeline & Correlation =================
+# ================= & Correlation =================
 @app.get("/api/cases/{case_id}/timeline")
 def timeline(
     case_id: str,
