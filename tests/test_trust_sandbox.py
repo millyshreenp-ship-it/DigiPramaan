@@ -144,11 +144,14 @@ def test_sandbox_lifecycle_and_isolation(sandbox_env):
     r_bad = client.post(f"/api/cases/{case_id}/sandbox/{sb_id}/inject", json={"template": "invalid", "params": {}, "expected_detection_type": "none"}, headers={"X-Requested-With": "idff"})
     assert r_bad.status_code == 422
     
+    injections = {}
     templates = ["registry run-key", "forged DNS/DHCP", "clock-skew timestamp", "off-hours USB copy", "scam-chat pair", "custom JSON"]
     for t in templates:
         r = client.post(f"/api/cases/{case_id}/sandbox/{sb_id}/inject", json={"template": t, "params": {"marker": f"UNIQUE_MARKER_{t}"}, "expected_detection_type": t}, headers={"X-Requested-With": "idff"})
         assert r.status_code == 200
-        assert r.json()["injection_id"].startswith("INJ-")
+        inj_id = r.json()["injection_id"]
+        assert inj_id.startswith("INJ-")
+        injections[inj_id] = t
         
     os.environ["DETECTOR"] = "dummy"
     r_run = client.post(f"/api/cases/{case_id}/sandbox/{sb_id}/run", headers={"X-Requested-With": "idff"})
@@ -163,8 +166,11 @@ def test_sandbox_lifecycle_and_isolation(sandbox_env):
     assert "detection_rate" in score
     assert score["isolation_status"] == "Master evidence unchanged"
     
-    missed_templates = [t for t in templates if not any(d["detection_type"] == t for d in score["detections"])]
+    detected_ids = {d.get("event_id") for d in score.get("detections", [])}
+    missed_templates = [injections[inj_id] for inj_id in injections if inj_id not in detected_ids]
     print("\\nMISSED TEMPLATES BY FALLBACK DETECTOR:", missed_templates)
+    
+    assert len(missed_templates) == score["missed"]
     
     manifest_after = compute_master_manifest(case_id)
     assert manifest_before == manifest_after
