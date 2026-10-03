@@ -363,22 +363,6 @@ $("#pw_save").onclick = async () => {
 };
 
 // ================= tabs =================
-function registerTab(id, label, loadFn) {
-  const btn = document.createElement("button");
-  btn.className = "tab"; btn.role = "tab"; btn.dataset.tab = id; btn.textContent = label;
-  btn.id = id + "Tab";
-  btn.onclick = () => showTab(id);
-  document.querySelector("nav").insertBefore(btn, $("#usersTab"));
-  
-  const origShowTab = window.showTab;
-  window.showTab = function(t) {
-    origShowTab(t);
-    const pane = document.getElementById("pane" + id.charAt(0).toUpperCase() + id.slice(1));
-    if (pane) pane.hidden = t !== id;
-    if (t === id && loadFn) loadFn();
-  };
-}
-
 function showTab(t) {
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
   $("#paneEvidence").style.display = t === "evidence" ? "grid" : "none";
@@ -399,8 +383,7 @@ document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.datas
 
 // ================= cases =================
 async function loadCases(select) {
-  const r = await api("/api/cases");
-  const cs = r.items || [];
+  const cs = await api("/api/cases");
   $("#caseSel").innerHTML = cs.length ? cs.map(c => `<option value="${esc(c.case_id)}">${esc(c.case_id)}: ${esc(c.title)}</option>`).join("") : `<option value="">No cases yet</option>`;
   if (select) $("#caseSel").value = select; else if (caseId && cs.some(c => c.case_id === caseId)) $("#caseSel").value = caseId;
   caseId = $("#caseSel").value || null;
@@ -833,12 +816,6 @@ let iqt; ["#iq_q","#iq_entity","#iq_etype","#iq_from","#iq_to"].forEach(sel => {
 
 
 boot();
-</script>
-<script src="/static/trust.js"></script>
-<script>
-  if (window.initTrustTabs) {
-    window.initTrustTabs(window.registerTab);
-  }
 </script>
 </body>
 </html>
