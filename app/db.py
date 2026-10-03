@@ -7,7 +7,7 @@ from . import config
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS cases (
   case_id TEXT PRIMARY KEY, title TEXT NOT NULL, jurisdiction TEXT, investigator TEXT,
-  status TEXT NOT NULL DEFAULT 'Open', created_at TEXT NOT NULL
+  status TEXT NOT NULL DEFAULT 'open', created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS evidence (
   evidence_id TEXT PRIMARY KEY, case_id TEXT NOT NULL REFERENCES cases(case_id),
@@ -53,34 +53,6 @@ CREATE TABLE IF NOT EXISTS case_members (
   case_role TEXT NOT NULL, assigned_by TEXT NOT NULL, assigned_at TEXT NOT NULL,
   PRIMARY KEY (case_id, user_id)
 );
-CREATE TABLE IF NOT EXISTS audit_anchors (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  seq_from INTEGER NOT NULL,
-  seq_to INTEGER NOT NULL REFERENCES custody_log(seq),
-  merkle_root TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  signature TEXT NOT NULL,
-  key_id TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS sandbox_runs (
-  run_id TEXT PRIMARY KEY,
-  case_id TEXT NOT NULL REFERENCES cases(case_id),
-  image TEXT NOT NULL,
-  script TEXT NOT NULL,
-  exit_code INTEGER,
-  stdout TEXT,
-  stderr TEXT,
-  run_at TEXT NOT NULL,
-  isolated_hash_before TEXT,
-  isolated_hash_after TEXT
-);
-CREATE TABLE IF NOT EXISTS sandbox_artifacts (
-  artifact_id TEXT PRIMARY KEY,
-  run_id TEXT NOT NULL REFERENCES sandbox_runs(run_id),
-  filename TEXT NOT NULL,
-  sha256 TEXT NOT NULL,
-  size INTEGER NOT NULL
-);
 """
 
 def connect() -> sqlite3.Connection:
@@ -99,18 +71,6 @@ def init_db() -> None:
                        ("created_by", "TEXT"), ("legal_hold", "INTEGER DEFAULT 0")]:
         if col not in cols:
             conn.execute(f"ALTER TABLE cases ADD COLUMN {col} {ctype}")
-            
-    clogs_cols = [r[1] for r in conn.execute("PRAGMA table_info(custody_log)").fetchall()]
-    for col, ctype in [("case_id", "TEXT"), ("evidence_id", "TEXT")]:
-        if col not in clogs_cols:
-            conn.execute(f"ALTER TABLE custody_log ADD COLUMN {col} {ctype}")
-            
-    # Idempotent status migration
-    conn.execute("UPDATE cases SET status='Open' WHERE status='open' OR status='ACTIVE'")
-    conn.execute("UPDATE cases SET status='Pending Legal Review' WHERE status='PENDING_REVIEW'")
-    conn.execute("UPDATE cases SET legal_hold=1 WHERE status='HOLD'")
-    conn.execute("UPDATE cases SET status='Under Analysis' WHERE status='HOLD'")
-    
     _backfill_case_members(conn)
     
     import os
@@ -129,8 +89,6 @@ def init_db() -> None:
               SELECT RAISE(ABORT, 'Deletions from custody_log are prohibited');
             END;
         """)
-        conn.execute("CREATE TRIGGER IF NOT EXISTS prevent_anchor_update BEFORE UPDATE ON audit_anchors BEGIN SELECT RAISE(ABORT, 'Anchor updates are forbidden'); END;")
-        conn.execute("CREATE TRIGGER IF NOT EXISTS prevent_anchor_delete BEFORE DELETE ON audit_anchors BEGIN SELECT RAISE(ABORT, 'Anchor deletes are forbidden'); END;")
         
     conn.commit()
     conn.close()
