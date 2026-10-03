@@ -69,8 +69,6 @@ A unified RBAC, case lifecycle, immutable audit trail, and synthetic "Digital Tw
 3. Run a single server process (SQLite and the in-memory login throttle are per-process).
 
 ## Known limits
-- All signed-in users see all cases. Per-case assignment is not built; the role model is global.
-- Custody log detects edits but is unsigned: an attacker with database access who rewrites the whole chain is not caught until signed periodic roots are added.
 - Read-only file permissions are a safeguard only; the hash check is what proves integrity. For WORM guarantees use immutable object storage.
 - Disk images (E01/dd), PCAP, browser, registry and mobile artifacts are not parsed yet (preserved and hashed, but no parser).
 - No password-recovery flow: an admin resets passwords. No MFA.
