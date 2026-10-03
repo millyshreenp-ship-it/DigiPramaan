@@ -72,7 +72,9 @@ def list_cases(request: Request, user: dict = ANY):
         total = c_db.execute(f"SELECT COUNT(DISTINCT c.case_id) {base_query}", params).fetchone()[0]
         items = [dict(r) for r in c_db.execute(f"SELECT DISTINCT c.* {base_query} ORDER BY c.{sort} LIMIT ? OFFSET ?", params + [per_page, offset]).fetchall()]
         
-        return {"total": total, "items": items, "page": page, "page_size": per_page}
+        if "page" in request.query_params:
+            return {"total": total, "items": items, "page": page, "page_size": per_page}
+        return items
 
 @router.get("/api/cases/{case_id}")
 def get_case(case_id: str, user: dict = Depends(require_permission("case:read"))):
@@ -127,26 +129,38 @@ def change_case_status(case_id: str, status: str = Form(...), reason: str = Form
         if old["legal_hold"] and status in ("Closed", "Archived"):
             raise HTTPException(400, "Cannot close or archive a case under legal hold.")
             
-        if status not in valid_transitions.get(old_status, []):
-            raise HTTPException(400, f"Invalid status transition from {old_status} to {status}.")
+        role = user["role"]
+        
+        if role == "admin" and status in ("Closed", "Archived"):
+            raise HTTPException(403, "Admin cannot close or archive alone.")
             
-        # Permission check & Workflow
-        from app.trust.rbac import PERMISSIONS
-        if status in ("Closed", "Archived"):
-            if "case:close" not in PERMISSIONS.get(user["role"], []) and user["role"] != "supervisor":
-                if status == "Closed" and user["role"] == "investigator":
-                    status = "Pending Legal Review"
-                    c.execute("UPDATE cases SET status=? WHERE case_id=?", (status, case_id))
-                    custody.append(c, actor=user["username"], action="close_requested", case_id=case_id, detail={"old": old_status, "new": status, "reason": reason})
-                    return {"ok": True, "status": status}
-                else:
-                    raise HTTPException(403, "Supervisor approval required to archive cases.")
+        action = "case_status_changed"
+        
+        if status == "Closed":
+            if role == "investigator":
+                status = "Pending Legal Review"
+                action = "close_requested"
+            elif role == "supervisor":
+                if old_status != "Pending Legal Review":
+                    raise HTTPException(400, "Supervisor may close only from Pending Legal Review.")
+                action = "case_closed"
+            else:
+                raise HTTPException(403, f"Role {role} cannot close case.")
+                
+        elif status == "Archived":
+            if role != "supervisor":
+                raise HTTPException(403, f"Role {role} cannot archive case.")
+            if old_status != "Closed":
+                raise HTTPException(400, "Supervisor may only archive Closed cases.")
+            action = "case_archived"
         else:
-            if "case:update" not in PERMISSIONS.get(user["role"], []):
+            # Check basic case:update for other transitions
+            from app.trust.rbac import PERMISSIONS
+            if "case:update" not in PERMISSIONS.get(role, []):
                 raise HTTPException(403, "Lacks permission to update case.")
                 
         c.execute("UPDATE cases SET status=? WHERE case_id=?", (status, case_id))
-        action = "case_closed" if status == "Closed" else "case_status_changed"
+        from app import custody
         custody.append(c, actor=user["username"], action=action, case_id=case_id, detail={"old": old_status, "new": status, "reason": reason})
     return {"ok": True, "status": status}
 

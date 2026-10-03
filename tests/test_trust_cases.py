@@ -119,8 +119,8 @@ def test_case_lifecycle():
     # List filtering test
     res = client.get("/api/cases?category=Data Theft/Insider", cookies={"idff_session": inv_token})
     assert res.status_code == 200
-    assert len(res.json()["items"]) == 1
-    assert res.json()["items"][0]["case_id"] == case_id
+    assert len(res.json()) == 1
+    assert res.json()[0]["case_id"] == case_id
 def test_status_transitions():
     admin_token, inv_token = setup_users()
     res = client.post("/api/cases", data={"title": "T1"}, cookies={"idff_session": inv_token})
@@ -183,12 +183,16 @@ def test_list_pagination_filtering():
     client.post("/api/cases", data={"title": "T1", "priority": "Low", "crime_category": "Financial Fraud"}, cookies={"idff_session": inv_token})
     client.post("/api/cases", data={"title": "T2", "priority": "High", "crime_category": "Ransomware"}, cookies={"idff_session": inv_token})
     
-    # Filter by priority
+    # Filter by priority without page (backward compat)
     res = client.get("/api/cases?priority=High", cookies={"idff_session": inv_token})
-    assert len(res.json()["items"]) == 1
-    assert res.json()["items"][0]["title"] == "T2"
+    assert isinstance(res.json(), list)
+    assert len(res.json()) == 1
+    assert res.json()[0]["title"] == "T2"
     
     # Pagination
     res = client.get("/api/cases?page=1", cookies={"idff_session": inv_token})
-    assert "total" in res.json()
-    assert res.json()["page"] == 1
+    data = res.json()
+    assert isinstance(data, dict)
+    assert "total" in data
+    assert data["page"] == 1
+    assert len(data["items"]) >= 2
