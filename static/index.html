@@ -814,8 +814,27 @@ let iqt; ["#iq_q","#iq_entity","#iq_etype","#iq_from","#iq_to"].forEach(sel => {
 });
 ["#iq_tq","#iq_ev"].forEach(sel => { const el = $(sel); if (el) el.onchange = () => { iqPage = 0; loadQuery(); }; });
 
+window.registerTab = (id, label, onShow) => {
+  const nav = document.querySelector("nav[role='tablist']");
+  if (!nav.querySelector(`button[data-tab='${id}']`)) {
+    const b = document.createElement("button");
+    b.className = "tab"; b.setAttribute("role", "tab"); b.dataset.tab = id;
+    b.setAttribute("aria-selected", "false"); b.textContent = label;
+    b.onclick = () => showTab(id);
+    nav.appendChild(b);
+  }
+  
+  const origShowTab = window.showTab || showTab;
+  window.showTab = (t) => {
+    origShowTab(t);
+    if (t === id && onShow) onShow();
+  };
+};
+window.refreshAll = refreshAll;
+window.enterApp = enterApp;
 
 boot();
 </script>
+<script src="/static/trust.js"></script>
 </body>
 </html>
