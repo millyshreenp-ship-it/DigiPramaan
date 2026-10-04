@@ -14,7 +14,8 @@ def create_case(title: str = Form(...), jurisdiction: str = Form(""), investigat
                 human_reference: str = Form(""), fir_number: str = Form(""), crime_category: str = Form(""),
                 unit: str = Form(""), description: str = Form(""), priority: str = Form(""),
                 user: dict = Depends(require_permission("case:create"))):
-    if not title.strip(): raise HTTPException(400, "Case title is required.")
+    if not title.strip():
+        raise HTTPException(400, "Case title is required.")
     case_id = "CASE-" + datetime.now().strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:4].upper()
     lead = investigator.strip() or user["full_name"] or user["username"]
     with db.session() as c:
@@ -43,7 +44,8 @@ def list_cases(request: Request, user: dict = ANY):
     category = request.query_params.get("category", "")
     sort = request.query_params.get("sort", "created_at DESC")
     
-    if sort not in ("created_at DESC", "created_at ASC"): sort = "created_at DESC"
+    if sort not in ("created_at DESC", "created_at ASC"):
+        sort = "created_at DESC"
     
     where_clauses = ["1=1"]
     params = []
@@ -81,7 +83,8 @@ def get_case(case_id: str, user: dict = Depends(require_permission("case:read"))
     get_case_or_403(case_id, user)
     with db.session() as c:
         row = c.execute("SELECT * FROM cases WHERE case_id=?", (case_id,)).fetchone()
-        if not row: raise HTTPException(404, "Case not found")
+        if not row:
+            raise HTTPException(404, "Case not found")
         case_data = dict(row)
         members = [dict(m) for m in c.execute("SELECT cm.*, u.username, u.full_name, u.role as platform_role FROM case_members cm JOIN users u ON cm.user_id=u.user_id WHERE cm.case_id=?", (case_id,))]
         case_data["members"] = members
@@ -96,7 +99,8 @@ def update_case_metadata(case_id: str, title: str = Form(...), human_reference: 
     get_case_or_403(case_id, user)
     with db.session() as c:
         old = c.execute("SELECT * FROM cases WHERE case_id=?", (case_id,)).fetchone()
-        if not old: raise HTTPException(404, "Case not found")
+        if not old:
+            raise HTTPException(404, "Case not found")
         if old["legal_hold"] or old["status"] == "Closed" or old["status"] == "Archived":
             raise HTTPException(400, "Cannot edit metadata of a closed, archived, or legally held case.")
         
@@ -115,7 +119,8 @@ def change_case_status(case_id: str, status: str = Form(...), reason: str = Form
     
     with db.session() as c:
         old = c.execute("SELECT * FROM cases WHERE case_id=?", (case_id,)).fetchone()
-        if not old: raise HTTPException(404, "Case not found")
+        if not old:
+            raise HTTPException(404, "Case not found")
         old_status = old["status"]
         
         # 1. Legal Hold blocks ALL changes
@@ -175,7 +180,8 @@ def set_legal_hold(case_id: str, hold: int = Form(...), user: dict = Depends(req
     get_case_or_403(case_id, user)
     with db.session() as c:
         old = c.execute("SELECT * FROM cases WHERE case_id=?", (case_id,)).fetchone()
-        if not old: raise HTTPException(404, "Case not found")
+        if not old:
+            raise HTTPException(404, "Case not found")
         if old["legal_hold"] == hold:
             return {"ok": True}
         c.execute("UPDATE cases SET legal_hold=? WHERE case_id=?", (hold, case_id))

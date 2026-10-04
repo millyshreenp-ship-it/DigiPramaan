@@ -32,9 +32,7 @@ def detect(events: List[Dict[str, Any]]) -> List[Detection]:
     coercion_seen = False
     for i, event in enumerate(events):
         try:
-            event_type = event.get("event_type", "")
             title = event.get("title", "").lower()
-            timestamp = event.get("timestamp", "")
             event_id = event.get("event_id", "")
             evidence_id = event.get("evidence_id", "")
             

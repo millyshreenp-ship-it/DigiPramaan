@@ -152,6 +152,9 @@ def test_case_lifecycle():
     
     # Reviewer
     ("Open", "Under Analysis", "reviewer", 403),
+    
+    # Examiner
+    ("Open", "Under Analysis", "examiner", 403),
 ])
 def test_status_transitions_matrix(old_status, new_status, role, expected_status):
     admin_token, inv_token = setup_users()

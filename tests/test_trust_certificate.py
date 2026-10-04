@@ -55,6 +55,12 @@ def test_certificate_permissions(test_client):
         app.dependency_overrides[auth.current_user] = lambda: {"user_id": uid, "username": username, "role": role}
         res = test_client.get("/api/cases/case1/certificate")
         assert res.status_code == expected_status
+        if expected_status == 200:
+            assert res.content.startswith(b"%PDF")
+            # PDF is binary and compressed, but string draws often show up in clear text or can be checked before compression.
+            # However, reportlab compresses pages by default unless pageCompression=0.
+            # certificate.py uses pageCompression=0 so we can search the bytes.
+            assert b"Prototype template. Statutory wording must be validated by legal counsel." in res.content
         app.dependency_overrides.clear()
         
     _test("admin1", "admin", 200)

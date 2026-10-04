@@ -31,7 +31,7 @@ def get_or_create_key():
         # Attempt to set permissions to 0600 (note: Windows ignores POSIX modes)
         try:
             os.chmod(key_path, 0o600)
-        except:
+        except Exception:
             pass
             
     with open(key_path, "rb") as f:
