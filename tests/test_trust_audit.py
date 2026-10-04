@@ -2,6 +2,7 @@ import sys
 import importlib
 import pytest
 import json
+import uuid
 from fastapi.testclient import TestClient
 
 # Initialize globally but overwrite in fixture
@@ -23,8 +24,6 @@ def strict_mode(monkeypatch, tmp_path):
     custody = importlib.import_module("app.custody")
     client = TestClient(app, headers={"X-Requested-With": "idff"})
     db.init_db()
-
-import uuid
 
 def setup_users():
     admin_name = "admin_" + uuid.uuid4().hex[:6]
@@ -273,7 +272,6 @@ def test_action_name_filters(monkeypatch):
     auditor_token, admin_token = setup_users()
     
     res = client.post("/api/cases", data={"title": "Filter Test"}, cookies={"idff_session": admin_token})
-    case_id = res.json()["case_id"]
     
     res = client.get("/api/audit?action=case_created", cookies={"idff_session": auditor_token})
     assert len(res.json()["entries"]) >= 1

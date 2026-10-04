@@ -2,10 +2,10 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
-client = TestClient(app, headers={"X-Requested-With": "idff"})
-
 import sys
 import importlib
+
+client = TestClient(app, headers={"X-Requested-With": "idff"})
 
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):
@@ -27,10 +27,12 @@ def strict_mode(monkeypatch, tmp_path):
 def setup_users_and_case():
     # Admin setup
     res = client.post("/api/auth/setup", data={"username": "admin", "password": "password123"})
-    if res.status_code not in (200, 409): print("SETUP:", res.text)
+    if res.status_code not in (200, 409):
+        print("SETUP:", res.text)
     
     res = client.post("/api/auth/login", data={"username": "admin", "password": "password123"})
-    if res.status_code != 200: print("ADMIN LOGIN:", res.text)
+    if res.status_code != 200:
+        print("ADMIN LOGIN:", res.text)
     admin_token = res.cookies.get("idff_session", "")
     
     # Create two regular users
@@ -39,7 +41,8 @@ def setup_users_and_case():
 
     # Login as inv to create a case
     res = client.post("/api/auth/login", data={"username": "inv", "password": "password123"})
-    if res.status_code != 200: print("INV LOGIN:", res.text)
+    if res.status_code != 200:
+        print("INV LOGIN:", res.text)
     inv_token = res.cookies["idff_session"]
     
     # Create case
@@ -134,7 +137,8 @@ def test_route_enumeration_for_leaks():
     
     leaks = []
     for route in app.routes:
-        if not hasattr(route, "methods"): continue
+        if not hasattr(route, "methods"):
+            continue
         path = route.path
         if "{case_id}" in path:
             test_path = path.replace("{case_id}", case_id)

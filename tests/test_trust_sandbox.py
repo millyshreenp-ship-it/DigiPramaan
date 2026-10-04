@@ -225,7 +225,7 @@ def test_sandbox_audit_events_in_transaction(sandbox_env):
     from app import db
     with db.session() as conn:
         logs = conn.execute("SELECT action FROM custody_log WHERE case_id=? ORDER BY seq", (case_id,)).fetchall()
-        actions = [l["action"] for l in logs]
+        actions = [x["action"] for x in logs]
         assert "sandbox_created" in actions
         assert "sandbox_artifact_injected" in actions
         assert "sandbox_run" in actions

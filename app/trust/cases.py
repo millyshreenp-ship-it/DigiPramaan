@@ -136,6 +136,9 @@ def change_case_status(case_id: str, status: str = Form(...), reason: str = Form
             
         # 2. Permission checks
         from app.trust.rbac import PERMISSIONS
+        if role == "admin" and status == "Closed":
+            raise HTTPException(403, "Admin cannot close or archive alone.")
+            
         if status == "Closed":
             if role != "supervisor":
                 raise HTTPException(403, f"Role {role} cannot close case.")

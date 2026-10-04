@@ -1,5 +1,4 @@
 import re
-import os
 import subprocess
 from app.main import app
 
