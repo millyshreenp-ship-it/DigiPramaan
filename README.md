@@ -6,7 +6,7 @@ A self-contained web application: sign-in, role-based access, evidence vault, ha
 ## Run
 ```bash
 ./run.sh                      # http://127.0.0.1:8000, first visit creates the administrator account
-uvicorn app.main:app --host 0.0.0.0 --port 8765
+docker compose up --build     # or: containerised, data in a named volume
 python3 -m pytest tests -q    # 21 tests
 ```
 `samples_for_testing/` holds three small logs (one fictional case) for trying the parsers. They are not loaded automatically.
@@ -35,7 +35,7 @@ python3 -m pytest tests -q    # 21 tests
 - Add a parser: subclass `BaseParser` in `app/parsers/`, implement `can_parse` and `parse`, decorate with `@register`, import it in `app/parsers/__init__.py`.
 
 
-## Timeline & Correlation (prototype)
+## Person 2 — Timeline & Correlation (prototype)
 
 Three investigator-facing views built on the normalized events API:
 
