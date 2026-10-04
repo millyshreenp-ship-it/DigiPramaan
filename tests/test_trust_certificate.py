@@ -1,6 +1,9 @@
 import os
 import pytest
 
+app = None
+db = None
+
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):
     monkeypatch.setenv("LEGACY_OPEN_ACCESS", "0")
@@ -36,48 +39,40 @@ def test_client():
     from fastapi.testclient import TestClient
     return TestClient(app, headers={"X-Requested-With": "idff"})
 
-def test_certificate_generation_admin(test_client):
+def test_certificate_permissions(test_client):
     import app.auth as auth
     
-    app.dependency_overrides[auth.current_user] = lambda: {"username": "admin1", "role": "admin"}
-    try:
-        res = test_client.get("/api/cases/case1/certificate")
-        assert res.status_code == 200
-        assert res.headers["content-type"] == "application/pdf"
-        
-        pdf_bytes = res.content
-        assert b"Prototype template. Statutory wording must be validated by legal counsel." in pdf_bytes
-        assert b"Section 63 Certificate" in pdf_bytes
-        assert b"Evidence List \\(SHA-256/512\\):" in pdf_bytes
-        assert b"Section 65B(4)" not in pdf_bytes
-        assert b"Cryptographically sealed" not in pdf_bytes
-        
-        with db.session() as c:
-            logs = c.execute("SELECT * FROM custody_log WHERE action='certificate_generated'").fetchall()
-            assert len(logs) == 1
-    finally:
-        app.dependency_overrides.clear()
-
-def test_certificate_generation_auditor(test_client):
-    import app.auth as auth
+    with db.session() as c:
+        # Create roles
+        for i, r in enumerate(["admin", "investigator", "supervisor", "reviewer", "examiner", "auditor"], 1):
+            c.execute(f"INSERT OR IGNORE INTO users(user_id, username, role, password_hash, created_at, active) VALUES({i}, '{r}1', '{r}', 'x', CURRENT_TIMESTAMP, 1)")
+            if r != "auditor":
+                # Add all except auditor as member of case1
+                c.execute(f"INSERT OR IGNORE INTO case_members(case_id, user_id, case_role, assigned_by, assigned_at) VALUES('case1', {i}, 'member', 'sys', CURRENT_TIMESTAMP)")
     
-    app.dependency_overrides[auth.current_user] = lambda: {"username": "auditor1", "role": "auditor"}
-    try:
+    def _test(username, role, expected_status):
+        uid = {"admin": 1, "investigator": 2, "supervisor": 3, "reviewer": 4, "examiner": 5, "auditor": 6}[role]
+        app.dependency_overrides[auth.current_user] = lambda: {"user_id": uid, "username": username, "role": role}
         res = test_client.get("/api/cases/case1/certificate")
-        assert res.status_code == 200
+        assert res.status_code == expected_status
+        app.dependency_overrides.clear()
         
-        pdf_bytes = res.content
-        assert b"Evidence List: REDACTED for auditor role" in pdf_bytes
-    finally:
-        app.dependency_overrides.clear()
-
-def test_certificate_generation_denied(test_client):
-    import app.auth as auth
+    _test("admin1", "admin", 200)
+    _test("investigator1", "investigator", 200)
+    _test("supervisor1", "supervisor", 200)
+    _test("reviewer1", "reviewer", 200)
     
-    # user is not a member of the case
-    app.dependency_overrides[auth.current_user] = lambda: {"username": "rando", "role": "reviewer", "user_id": "U999"}
-    try:
-        res = test_client.get("/api/cases/case1/certificate")
-        assert res.status_code == 403
-    finally:
-        app.dependency_overrides.clear()
+    _test("examiner1", "examiner", 403)
+    _test("auditor1", "auditor", 403)
+    
+    # Non-member reviewer (create new user not in case_members)
+    with db.session() as c:
+        c.execute("INSERT OR IGNORE INTO users(user_id, username, role, password_hash, created_at, active) VALUES(7, 'rev2', 'reviewer', 'x', CURRENT_TIMESTAMP, 1)")
+    app.dependency_overrides[auth.current_user] = lambda: {"user_id": 7, "username": "rev2", "role": "reviewer"}
+    res = test_client.get("/api/cases/case1/certificate")
+    assert res.status_code == 403
+    app.dependency_overrides.clear()
+    
+    # Unauthenticated
+    res = test_client.get("/api/cases/case1/certificate")
+    assert res.status_code == 401

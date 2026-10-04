@@ -3,6 +3,10 @@ import pytest
 import sys
 import hashlib
 
+app = None
+db = None
+custody = None
+
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):
     monkeypatch.setenv("LEGACY_OPEN_ACCESS", "0")

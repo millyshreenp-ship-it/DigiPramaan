@@ -6,11 +6,11 @@ from fastapi.responses import JSONResponse
 from app import db, auth
 
 PERMISSIONS = {
-    "admin": ["case:create", "case:read", "case:assign", "case:update", "evidence:upload", "evidence:read", "finding:write", "sandbox:run", "audit:read", "audit:verify", "audit:export", "user:manage"],
-    "investigator": ["case:create", "case:read", "case:assign", "case:update", "evidence:upload", "evidence:read", "finding:write", "sandbox:run"],
+    "admin": ["case:create", "case:read", "case:assign", "case:update", "evidence:upload", "evidence:read", "finding:write", "sandbox:run", "audit:read", "audit:verify", "audit:export", "user:manage", "certificate:export"],
+    "investigator": ["case:create", "case:read", "case:assign", "case:update", "evidence:upload", "evidence:read", "finding:write", "sandbox:run", "certificate:export"],
     "examiner": ["case:read", "evidence:upload", "evidence:read", "finding:write", "sandbox:run"],
-    "supervisor": ["case:read", "case:update", "case:close", "audit:read", "audit:verify"],
-    "reviewer": ["case:read", "evidence:read", "finding:read", "audit:read"],
+    "supervisor": ["case:read", "case:update", "case:close", "audit:read", "audit:verify", "certificate:export"],
+    "reviewer": ["case:read", "evidence:read", "finding:read", "audit:read", "certificate:export"],
     "auditor": ["case:read", "audit:read", "audit:verify", "audit:export"],
 }
 

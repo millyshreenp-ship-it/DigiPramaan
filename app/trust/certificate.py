@@ -12,7 +12,7 @@ from reportlab.graphics.shapes import Drawing
 router = APIRouter()
 
 @router.get("/api/cases/{case_id}/certificate")
-def generate_certificate(case_id: str, user: dict = Depends(require_permission("case:read"))):
+def generate_certificate(case_id: str, user: dict = Depends(require_permission("certificate:export"))):
     get_case_or_403(case_id, user)
     
     cert_dir = os.path.join(config.DATA_DIR, "certificates")
@@ -58,6 +58,6 @@ def generate_certificate(case_id: str, user: dict = Depends(require_permission("
     c.save()
     
     with db.session() as conn:
-        custody.append(conn, actor=user["username"], action="certificate_generated", case_id=case_id, detail={"path": pdf_path})
+        custody.append(conn, actor=user["username"], action="certificate_generated", case_id=case_id, detail={"status": "generated"})
         
     return FileResponse(pdf_path, filename=f"{case_id}_certificate.pdf")

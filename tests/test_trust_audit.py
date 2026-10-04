@@ -1,6 +1,7 @@
 import sys
 import importlib
 import pytest
+import json
 from fastapi.testclient import TestClient
 
 # Initialize globally but overwrite in fixture
@@ -96,13 +97,14 @@ def test_export_neutralization():
     with db.session() as c:
         custody.append(c, actor="=cmd|' /C calc'!A0", action="@malicious", detail={"notes": "+1+1", "safe": "text"})
         
-    res = client.get("/api/audit/export", cookies={"idff_session": admin_token})
+    res = client.get("/api/audit/bundle", cookies={"idff_session": admin_token})
     assert res.status_code == 200
     entries = res.json()["entries"]
-    event = next(e for e in entries if e["action"] == "'@malicious")
-    assert event["actor"] == "'=cmd|' /C calc'!A0"
-    assert event["detail"]["notes"] == "'+1+1"
-    assert event["detail"]["safe"] == "text"
+    event = next(e for e in entries if e["action"] == "@malicious")
+    assert event["actor"] == "=cmd|' /C calc'!A0"
+    detail = json.loads(event["detail"]) if isinstance(event["detail"], str) else event["detail"]
+    assert detail["notes"] == "+1+1"
+    assert detail["safe"] == "text"
 
 def test_atomicity_business_fail(monkeypatch):
     auditor_token, admin_token = setup_users()

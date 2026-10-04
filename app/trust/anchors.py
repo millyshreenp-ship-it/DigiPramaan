@@ -1,8 +1,8 @@
 import os
 import hashlib
 from datetime import datetime, timezone
-from cryptography.hazmat.primitives.asymmetric import ed25519
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519 # type: ignore
+from cryptography.hazmat.primitives import serialization # type: ignore
 from fastapi import APIRouter, Depends, HTTPException
 from app import config, db, custody
 from app.trust.rbac import require_permission

@@ -24,7 +24,7 @@ def get_token(username, role):
 @pytest.mark.parametrize("role, initial_status, target_status, expected_status_code, expected_final_status", [
     # Investigator
     ("investigator", "Open", "Closed", 200, "Pending Legal Review"), # requests closure
-    ("investigator", "Pending Legal Review", "Closed", 200, "Pending Legal Review"),
+    ("investigator", "Pending Legal Review", "Closed", 400, None),
     ("investigator", "Closed", "Archived", 403, None),
     
     # Supervisor
@@ -36,7 +36,7 @@ def get_token(username, role):
     # Admin
     ("admin", "Open", "Closed", 403, None),
     ("admin", "Pending Legal Review", "Closed", 403, None),
-    ("admin", "Closed", "Archived", 403, None),
+    ("admin", "Closed", "Archived", 200, "Archived"),
     
     # Examiner
     ("examiner", "Open", "Closed", 403, None),

@@ -243,7 +243,7 @@ function initTrustTabs(registerTab) {
 
   $("#gExportBtn").onclick = async () => {
     try {
-      const r = await api("/api/audit/export");
+      const r = await api("/api/audit/bundle");
       const blob = new Blob([JSON.stringify(r, null, 2)], {type: "application/json"});
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "global_audit_trail_" + new Date().toISOString().replace(/[:.]/g,"-") + ".json"; a.click();
     } catch (e) { toast(e.message); }
@@ -455,7 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       $("#gExportBtn").onclick = async () => {
         try {
-          const r = await api("/api/audit/export");
+          const r = await api("/api/audit/bundle");
           const blob = new Blob([JSON.stringify(r.entries, null, 2)], {type: "application/json"});
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");

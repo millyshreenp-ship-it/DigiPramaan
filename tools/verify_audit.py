@@ -1,7 +1,7 @@
 import sys
 import json
 import hashlib
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization # type: ignore
 
 def compute_merkle_root(hashes):
     if not hashes:

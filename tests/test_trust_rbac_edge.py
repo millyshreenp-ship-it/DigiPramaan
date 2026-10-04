@@ -4,6 +4,10 @@ from fastapi.testclient import TestClient
 import sys
 import importlib
 
+app = None
+db = None
+client = None
+
 @pytest.fixture(autouse=True)
 def strict_mode_edge(monkeypatch, tmp_path):
     monkeypatch.setenv("LEGACY_OPEN_ACCESS", "0")

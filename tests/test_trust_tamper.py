@@ -2,6 +2,9 @@ import os
 import pytest
 from app import custody
 
+app = None
+db = None
+
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):
     monkeypatch.setenv("LEGACY_OPEN_ACCESS", "0")

@@ -87,32 +87,7 @@ def global_audit_log(case_id: str = None, action: str = None, user: dict = Depen
             r["detail"] = detail
         return {"chain": custody.verify_chain(c, case_id=case_id), "entries": rows}
 
-@router.get("/api/audit/export")
-def global_audit_export(case_id: str = None, user: dict = Depends(require_permission("audit:export"))):
-    from app.trust.rbac import PERMISSIONS
-    can_read_evidence = "evidence:read" in PERMISSIONS.get(user["role"], [])
-    
-    with db.session() as c:
-        query = "SELECT * FROM custody_log"
-        params = []
-        if case_id:
-            query += " WHERE case_id=?"
-            params.append(case_id)
-        query += " ORDER BY seq"
-        
-        rows = [dict(r) for r in c.execute(query, params)]
-        for r in rows:
-            detail = json.loads(r["detail"] or "{}")
-            if not can_read_evidence:
-                detail = _redact_sensitive(detail)
-            r["detail"] = _neutralize_dict(detail)
-            r["actor"] = _neutralize(r["actor"])
-            r["action"] = _neutralize(r["action"])
-            r["case_id"] = _neutralize(r["case_id"])
-            r["evidence_id"] = _neutralize(r["evidence_id"])
-            
-        custody.append(c, actor=user["username"], action="GLOBAL_AUDIT_EXPORTED" if not case_id else "CASE_AUDIT_EXPORTED", case_id=case_id, detail={"rows": len(rows)})
-        return {"chain": custody.verify_chain(c, case_id=case_id), "entries": rows}
+
 
 @router.get("/api/audit/verify")
 def verify_audit_chain(case_id: str = None, user: dict = Depends(require_permission("audit:verify"))):

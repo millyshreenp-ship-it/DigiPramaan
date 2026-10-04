@@ -4,6 +4,9 @@ import pytest
 import subprocess
 from app import custody
 
+app = None
+db = None
+
 @pytest.fixture(autouse=True)
 def strict_mode(monkeypatch, tmp_path):
     monkeypatch.setenv("LEGACY_OPEN_ACCESS", "0")
@@ -122,8 +125,8 @@ def test_verify_tool_valid_and_tampered(test_client, tmp_path):
     
     # 5. Wrong key
     wrong_key_path = str(tmp_path / "wrong.key")
-    from cryptography.hazmat.primitives.asymmetric import ed25519
-    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ed25519 # type: ignore
+    from cryptography.hazmat.primitives import serialization # type: ignore
     wk = ed25519.Ed25519PrivateKey.generate()
     with open(wrong_key_path, "wb") as f:
         f.write(wk.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
