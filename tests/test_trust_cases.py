@@ -136,6 +136,7 @@ def test_case_lifecycle():
     ("Pending Legal Review", "Closed", "investigator", 400), # Intercepted to PLR -> PLR, which is invalid (400)
     ("Pending Legal Review", "Open", "investigator", 400), # Invalid transition
     ("Closed", "Open", "investigator", 400), # Invalid transition in matrix
+    ("Closed", "Archived", "investigator", 403), # 403: Role investigator cannot archive
     
     # Supervisor
     ("Open", "Under Analysis", "supervisor", 200),

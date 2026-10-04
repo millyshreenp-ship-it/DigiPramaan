@@ -50,8 +50,8 @@ def test_certificate_permissions(test_client):
                 # Add all except auditor as member of case1
                 c.execute(f"INSERT OR IGNORE INTO case_members(case_id, user_id, case_role, assigned_by, assigned_at) VALUES('case1', {i}, 'member', 'sys', CURRENT_TIMESTAMP)")
     
-    def _test(username, role, expected_status):
-        uid = {"admin": 1, "investigator": 2, "supervisor": 3, "reviewer": 4, "examiner": 5, "auditor": 6}[role]
+    def _test(username, role, expected_status, uid_override=None):
+        uid = uid_override or {"admin": 1, "investigator": 2, "supervisor": 3, "reviewer": 4, "examiner": 5, "auditor": 6}[role]
         app.dependency_overrides[auth.current_user] = lambda: {"user_id": uid, "username": username, "role": role}
         res = test_client.get("/api/cases/case1/certificate")
         assert res.status_code == expected_status
@@ -74,10 +74,8 @@ def test_certificate_permissions(test_client):
     # Non-member reviewer (create new user not in case_members)
     with db.session() as c:
         c.execute("INSERT OR IGNORE INTO users(user_id, username, role, password_hash, created_at, active) VALUES(7, 'rev2', 'reviewer', 'x', CURRENT_TIMESTAMP, 1)")
-    app.dependency_overrides[auth.current_user] = lambda: {"user_id": 7, "username": "rev2", "role": "reviewer"}
-    res = test_client.get("/api/cases/case1/certificate")
-    assert res.status_code == 403
-    app.dependency_overrides.clear()
+    
+    _test("rev2", "reviewer", 403, uid_override=7)
     
     # Unauthenticated
     res = test_client.get("/api/cases/case1/certificate")
