@@ -343,6 +343,17 @@ def api_case_custody(case_id: str):
     return {"case_id": case.case_id, "steps": steps, "status": "VERIFIED", "total": len(case.events)}
 
 
+@app.get("/api/dashboard/{case_id}", tags=["Dashboard"])
+def api_dashboard_bundle(case_id: str):
+    """Combine evidence, graph, timeline, and custody data for the dashboard."""
+    return {
+        "evidence": api_case_evidence(case_id),
+        "graph": api_case_graph(case_id),
+        "timeline": api_case_timeline(case_id, limit=16),
+        "custody": api_case_custody(case_id),
+    }
+
+
 # Mount React static build if available
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
