@@ -4,31 +4,15 @@
 
 @layer base {
   body {
-    background-color: #030712;
-    color: #f3f4f6;
+    background-color: #060b16;
+    color: #f1f5f9;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
-  
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
 }
-
-/* Custom scrollbars for dense forensic logs */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a1224; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
