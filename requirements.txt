@@ -7,3 +7,10 @@ pytest>=8.0      # tests only
 tzdata           # windows tzdb for zoneinfo
 cryptography     # Ed25519 signatures
 reportlab        # PDF and QR generation
+
+# AI Reasoning & Adversarial Engine (SUTRAM)
+pydantic>=2.0
+scikit-learn>=1.4.0
+pandas>=2.0.0
+pyyaml>=6.0
+requests>=2.31.0

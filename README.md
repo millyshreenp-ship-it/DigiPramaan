@@ -73,3 +73,31 @@ A unified RBAC, case lifecycle, immutable audit trail, and synthetic "Digital Tw
 - Disk images (E01/dd), PCAP, browser, registry and mobile artifacts are not parsed yet (preserved and hashed, but no parser).
 - No password-recovery flow: an admin resets passwords. No MFA.
 - The integrity record reports technical facts only. Admissibility under BSA Section 63 is a legal determination for counsel.
+
+---
+
+## AI Reasoning & Adversarial Engine (SUTRAM)
+
+The AI Reasoning & Adversarial Self-Cross-Examination module of the indigenous forensics platform.
+
+### Headline USP: Courtroom-Proof Adversarial Self-Cross-Examination
+The AI does not just accuse—it acts as a defense attorney attacking its own findings, lists benign alternative explanations, and tells the investigator exactly what corroborating evidence to pull to close each loophole before court submission.
+
+### Secondary USP: Local Air-Gapped LLM (Zero Data Egress)
+Runs with `ZERO_EGRESS=true` prohibiting any non-localhost network traffic. Fully compatible with local Ollama (`qwen2.5:3b`, `phi3`), optional Gemini (`GEMINI_API_KEY`), or deterministic offline `MockProvider`.
+
+### Features
+1. **AI-Assisted Summarization with Citations** (`POST /api/summarize`): Citation validator guarantees every factual claim is strictly bound to real event IDs.
+2. **Adversarial Self-Cross-Examination** (`POST /api/cross-examine` & `POST /api/cross-examine/{id}/add-evidence`): Hybrid YAML counter-hypothesis library (`backend/rules/counter_hypotheses.yaml`) + dynamic strength re-evaluation (`weak` -> `strong`).
+3. **Hybrid Anomaly Detection** (`POST /api/anomalies`): Domain-specific IST off-hours rules + scikit-learn IsolationForest behavioral outlier profiling.
+4. **Interactive 3-Panel Courtroom Dashboard**: React + Vite + Tailwind dark UI on `http://localhost:8000` with printable Indian Courtroom Rebuttal Briefs (BSA 2023 Sec 63 / IEA Sec 65B).
+
+### Quick Run
+```bash
+python scripts/seed_demo.py
+python demo.py                        # Full-stack UI & REST API on http://localhost:8000
+python demo.py --cli                  # Automated terminal CLI demonstration
+python -m pytest tests/test_phase*.py # 27 forensic engine unit tests
+```
+
+For complete module documentation, schemas, and teammate API guide, see [README_AI_ENGINE.md](README_AI_ENGINE.md).

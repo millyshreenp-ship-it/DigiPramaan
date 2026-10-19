@@ -1,0 +1,382 @@
+{
+  "case_id": "CASE-BENIGN-002",
+  "title": "Routine Workstation Activity - Marketing Dept",
+  "description": "Standard daytime operations on WS-MKT-02 during business hours.",
+  "events": [
+    {
+      "event_id": "EVT-B001",
+      "timestamp_utc": "2025-03-13T04:48:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "login",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "d8598a27ff52475d2a0cc58c7720a537bd19e67c8e9d651c6efe699c41dd0f6f",
+      "raw_ref": "benign_log.evtx:Record_1"
+    },
+    {
+      "event_id": "EVT-B002",
+      "timestamp_utc": "2025-03-13T05:06:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "4e8521e8adeb7005536797f0add3f5c7cb97f95fe805bcf2bd42470b4501c9ba",
+      "raw_ref": "benign_log.evtx:Record_2"
+    },
+    {
+      "event_id": "EVT-B003",
+      "timestamp_utc": "2025-03-13T05:24:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "b341a7af49bc4e8fbfccd6023f98083bda14aac54171b18359b7806857b79f55",
+      "raw_ref": "benign_log.evtx:Record_3"
+    },
+    {
+      "event_id": "EVT-B004",
+      "timestamp_utc": "2025-03-13T05:42:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "042731dd9d47f5636a89ade94e13afca0a0ada58802a46f3c0f517272938334a",
+      "raw_ref": "benign_log.evtx:Record_4"
+    },
+    {
+      "event_id": "EVT-B005",
+      "timestamp_utc": "2025-03-13T06:00:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "file_copy",
+      "object": "Project_Specs.docx",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "7ad261c293707541044c79505e74a3c7b82ec31f321d20f0fd892bf46c3935a6",
+      "raw_ref": "benign_log.evtx:Record_5"
+    },
+    {
+      "event_id": "EVT-B006",
+      "timestamp_utc": "2025-03-13T06:18:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "71513a9e22dcbb66b093de6ccda9d13a02c5eb2176c91bea4f2d121a44a48910",
+      "raw_ref": "benign_log.evtx:Record_6"
+    },
+    {
+      "event_id": "EVT-B007",
+      "timestamp_utc": "2025-03-13T06:36:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "c18b3dc24dff4f3279910fc73cac8eb35f04d0a48807d92186de4a37fcf5cec1",
+      "raw_ref": "benign_log.evtx:Record_7"
+    },
+    {
+      "event_id": "EVT-B008",
+      "timestamp_utc": "2025-03-13T06:54:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "6c2ed91b8f53686dc6f4165b0fb19bf0df01b7612e2e2b2d9f7ad6313fba9a92",
+      "raw_ref": "benign_log.evtx:Record_8"
+    },
+    {
+      "event_id": "EVT-B009",
+      "timestamp_utc": "2025-03-13T07:12:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "6fe62eef131f7febbab6ac63b752366aba7c95b8b67f634bd48f5459a89ce7cc",
+      "raw_ref": "benign_log.evtx:Record_9"
+    },
+    {
+      "event_id": "EVT-B010",
+      "timestamp_utc": "2025-03-13T07:30:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "file_copy",
+      "object": "Project_Specs.docx",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "02f282f4aefe7e76b17cfc7798e7c8587997878da248112fbe33c9c7822b7b2b",
+      "raw_ref": "benign_log.evtx:Record_10"
+    },
+    {
+      "event_id": "EVT-B011",
+      "timestamp_utc": "2025-03-13T07:48:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "b5b364632083bafa59a083ef917e49967a791ad8c5ae3993794eda15ecb9f89f",
+      "raw_ref": "benign_log.evtx:Record_11"
+    },
+    {
+      "event_id": "EVT-B012",
+      "timestamp_utc": "2025-03-13T08:06:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "c1d489845e3f6bf7dd9b0f397ed555d6cfbe9ddfff983af569c6904ec4269245",
+      "raw_ref": "benign_log.evtx:Record_12"
+    },
+    {
+      "event_id": "EVT-B013",
+      "timestamp_utc": "2025-03-13T08:24:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "953dd0313901bb19d674df5ed69d8af1f2208e759b046afcf09b985130679ffb",
+      "raw_ref": "benign_log.evtx:Record_13"
+    },
+    {
+      "event_id": "EVT-B014",
+      "timestamp_utc": "2025-03-13T08:42:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "290455025ad553b6adc456ca8fc6f54a66b2b7d6b827bdef106c06f9a371689e",
+      "raw_ref": "benign_log.evtx:Record_14"
+    },
+    {
+      "event_id": "EVT-B015",
+      "timestamp_utc": "2025-03-13T09:00:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "file_copy",
+      "object": "Project_Specs.docx",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "3e0525b0174d0a74aa067048e838ded64c6cc7dfcd980f4339120a34e1637c9b",
+      "raw_ref": "benign_log.evtx:Record_15"
+    },
+    {
+      "event_id": "EVT-B016",
+      "timestamp_utc": "2025-03-13T09:18:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "235b2331ebc5b62c5f69846e3fab61dda3712ed7615e5f657adb480dc961b640",
+      "raw_ref": "benign_log.evtx:Record_16"
+    },
+    {
+      "event_id": "EVT-B017",
+      "timestamp_utc": "2025-03-13T09:36:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "5ee52ebb3c6b0f376ecc258432cfa7cfa38132a145999dc02eb40383bf23a263",
+      "raw_ref": "benign_log.evtx:Record_17"
+    },
+    {
+      "event_id": "EVT-B018",
+      "timestamp_utc": "2025-03-13T09:54:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "8e7b7ed570b34aafa99aad21843ac62234f9b2efe3c5874cb13361d0ee53d4de",
+      "raw_ref": "benign_log.evtx:Record_18"
+    },
+    {
+      "event_id": "EVT-B019",
+      "timestamp_utc": "2025-03-13T10:12:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "78a388ec8750ce1d307967b2b9256da38f820f6ffde03751d9c0f57a32713c4d",
+      "raw_ref": "benign_log.evtx:Record_19"
+    },
+    {
+      "event_id": "EVT-B020",
+      "timestamp_utc": "2025-03-13T10:30:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "file_copy",
+      "object": "Project_Specs.docx",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "4fd9801c8e809e2abab7cd8c632c8dd709357cf75fb50ea0a2d944a264ba8417",
+      "raw_ref": "benign_log.evtx:Record_20"
+    },
+    {
+      "event_id": "EVT-B021",
+      "timestamp_utc": "2025-03-13T10:48:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "34fda082876c31fdd277b1f49cf469da9431e4d0d30c30928851653c9010a3fa",
+      "raw_ref": "benign_log.evtx:Record_21"
+    },
+    {
+      "event_id": "EVT-B022",
+      "timestamp_utc": "2025-03-13T11:06:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "f779bbfec90d43f4f872c9221726e6de2104fd42ed1d6caf686693ba61091cea",
+      "raw_ref": "benign_log.evtx:Record_22"
+    },
+    {
+      "event_id": "EVT-B023",
+      "timestamp_utc": "2025-03-13T11:24:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "3f8ac3c8bfda5b4ebfa5e7b5eccdf2ee9f4dd9a59f9a0544ad2562ef1d7dfb04",
+      "raw_ref": "benign_log.evtx:Record_23"
+    },
+    {
+      "event_id": "EVT-B024",
+      "timestamp_utc": "2025-03-13T11:42:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "user_priya",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "9f4fd1247e717081f6ba7ed008fcd2e4b952b16f82c2394900431ea738bacb5f",
+      "raw_ref": "benign_log.evtx:Record_24"
+    },
+    {
+      "event_id": "EVT-B025",
+      "timestamp_utc": "2025-03-13T12:00:00Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "user_priya",
+      "action": "file_copy",
+      "object": "Project_Specs.docx",
+      "details": {
+        "workstation": "WS-MKT-02",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "2f86d51db2f4394de0f4532e5ae274c540d1720d9e8500e32435d863031affee",
+      "raw_ref": "benign_log.evtx:Record_25"
+    }
+  ]
+}

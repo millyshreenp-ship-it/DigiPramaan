@@ -1,0 +1,81 @@
+# Counter-Hypothesis Library for Digital Forensics Adversarial Self-Cross-Examination
+# Keyed by forensic action patterns, trigger conditions, and concrete rebuttal artifacts.
+
+rules:
+  - id: CH-BACKUP
+    name: "Automated Scheduled Backup / Archival Process"
+    trigger_actions: ["file_copy", "bulk_file_copy", "usb_connect"]
+    check_type: "scheduled_task_near"
+    window_minutes: 20
+    alternative_explanation: "Automated Scheduled Backup: The file copy coincided with an automated enterprise backup or synchronization job. The data movement may have been executed by background automation rather than intentional human exfiltration."
+    default_plausibility: "high"
+    evidence_needed_to_rule_out:
+      - "Pull Task Scheduler XML definition (C:\\Windows\\System32\\Tasks\\*) to verify action script and target destination path."
+      - "Forensically inspect backup script source code to check if destination drive matches the mounted storage."
+      - "Examine Shadow Copy (VSS) creation logs and Task Scheduler Operational Event ID 102/201."
+    rule_out_criteria: "task_destination_mismatch"
+
+  - id: CH-RDP-HIJACK
+    name: "Remote Session Hijacking / Compromised Workstation"
+    trigger_actions: ["file_copy", "usb_connect", "file_delete", "login"]
+    check_type: "remote_session_prior"
+    window_minutes: 30
+    alternative_explanation: "Host Compromise / Remote Desktop Hijack: An inbound remote desktop or SSH session from an untrusted or unverified IP address was established prior to the actions. The suspect machine may have been controlled remotely by an unauthorized third party."
+    default_plausibility: "high"
+    evidence_needed_to_rule_out:
+      - "Pull Microsoft-Windows-TerminalServices-LocalSessionManager/Operational log (Event IDs 21, 24, 25) to map Client IP to logon session ID."
+      - "Inspect perimeter firewall state tables for port 3389 NAT translations and inbound packet dumps."
+      - "Correlate physical CCTV footage or building access control (swipe card) to confirm whether the accused was physically present at the workstation."
+    rule_out_criteria: "session_id_mismatch_or_cctv_confirmed"
+
+  - id: CH-AUTHORIZED-DEVICE
+    name: "Authorized Enterprise Peripheral Reassignment"
+    trigger_actions: ["usb_connect", "file_copy"]
+    check_type: "usb_unverified_serial"
+    window_minutes: 60
+    alternative_explanation: "Authorized Corporate Peripheral: The removable storage device may be an official enterprise-issued encrypted drive utilized for sanctioned off-site data retention or disaster recovery."
+    default_plausibility: "medium"
+    evidence_needed_to_rule_out:
+      - "Cross-reference USB device serial number from SYSTEM registry hive (USBSTOR) against Enterprise IT Asset Management database."
+      - "Query Active Directory for BitLocker To Go escrow recovery keys matching the volume GUID."
+      - "Obtain employee job description and signed Written Data Handling Authorization from the Reporting Manager."
+    rule_out_criteria: "serial_not_in_asset_register"
+
+  - id: CH-CLOCK-SKEW
+    name: "Timeline Distortion via Clock Skew / NTP Discrepancy"
+    trigger_actions: ["file_copy", "login", "file_delete", "network_conn"]
+    check_type: "clock_skew_flag"
+    window_minutes: 10
+    alternative_explanation: "Clock Uncertainty / Timeline Distortion: Variations in local CMOS clock drift and uncalibrated system clocks across different sensor sources may falsely correlate separate unrelated events."
+    default_plausibility: "medium"
+    evidence_needed_to_rule_out:
+      - "Extract W32Time registry configuration (HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time) to determine NTP server sync interval."
+      - "Inspect Windows Time-Service Event Log (Event ID 261, 262) for clock step corrections."
+      - "Obtain certified NTP stratum-1 time verification report under BSA Section 63."
+    rule_out_criteria: "ntp_sync_certified"
+
+  - id: CH-SHARED-ACCOUNT
+    name: "Shared Credentials or Concurrent User Access"
+    trigger_actions: ["login", "file_copy", "file_delete"]
+    check_type: "shared_credentials"
+    window_minutes: 60
+    alternative_explanation: "Credential Sharing / Dual Operator Usage: Corporate credentials in finance departments are frequently shared among team members, shifts, or administrative assistants."
+    default_plausibility: "medium"
+    evidence_needed_to_rule_out:
+      - "Examine Kerberos Ticket Granting Service (TGS) requests (Event ID 4769) for multiple IP addresses requesting tickets simultaneously."
+      - "Retrieve physical badge swipe records for all personnel who entered the finance bay during the relevant window."
+      - "Examine browser autofill and password manager vault access logs on the local profile."
+    rule_out_criteria: "biometric_or_cctv_exclusive_presence"
+
+  - id: CH-CLOUD-SYNC
+    name: "Automated Cloud Storage Synchronization"
+    trigger_actions: ["network_conn", "file_copy"]
+    check_type: "cloud_sync_process"
+    window_minutes: 15
+    alternative_explanation: "Legitimate Cloud Sync: Outbound traffic or file operations may reflect standard background synchronization from authorized corporate cloud utilities (e.g. OneDrive, SharePoint, Google Drive)."
+    default_plausibility: "low"
+    evidence_needed_to_rule_out:
+      - "Analyze process execution ancestry for OneDrive.exe, GoogleDriveFS.exe, or FileCoAuth.exe."
+      - "Inspect local Cloud Storage metadata databases (e.g. SyncEngine.db)."
+      - "Check Corporate Proxy logs for Destination FQDN classification."
+    rule_out_criteria: "destination_is_not_cloud_sync"

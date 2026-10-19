@@ -7,5 +7,20 @@ services:
       FORENSIC_COOKIE_SECURE: "0"        # set to "1" once served over HTTPS
       FORENSIC_MAX_UPLOAD_BYTES: "10737418240"
     restart: unless-stopped
+
+  ai-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai_engine
+    container_name: sutram_ai_engine
+    ports: ["127.0.0.1:8010:8000"]
+    environment:
+      - LLM_PROVIDER=mock
+      - ZERO_EGRESS=true
+      - AUDIT_LOG_FILE=/app/audit_trail.log
+    volumes:
+      - ./sample_data:/app/sample_data
+    restart: unless-stopped
+
 volumes:
   idff-data:

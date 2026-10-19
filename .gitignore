@@ -10,3 +10,12 @@ throwaway_data*/
 *.db
 vault/
 keys/
+
+# AI Reasoning & Adversarial Engine
+audit_trail.log
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+frontend/coverage/
+.DS_Store
+*.local

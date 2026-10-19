@@ -1,0 +1,959 @@
+{
+  "case_id": "CASE-USB-THEFT-001",
+  "title": "Suspected Intellectual Property Exfiltration - Finance Dept",
+  "description": "Allegation of unauthorized USB copying of Quarterly_Financials.xlsx after hours on workstation WS-FIN-04.",
+  "events": [
+    {
+      "event_id": "EVT-0001",
+      "timestamp_utc": "2025-03-14T03:30:00Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "login",
+      "object": "Team_Roster.xlsx",
+      "details": {
+        "workstation": "WS-ENG-01",
+        "session_id": "SESS-2025-001",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "50f808bd22af7fd0a233e6a967643b90079d8de122f86589d4e0f586130cdc4a",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_1024"
+    },
+    {
+      "event_id": "EVT-0002",
+      "timestamp_utc": "2025-03-14T03:45:23Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "login",
+      "object": "Client_Notes.docx",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-002",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "1d1e4e11c3dae454804401bc98213ac340247fbef809c10387dc3ca2b569af09",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_2048"
+    },
+    {
+      "event_id": "EVT-0003",
+      "timestamp_utc": "2025-03-14T04:00:46Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "svc_backup",
+      "action": "login",
+      "object": "chrome.exe",
+      "details": {
+        "workstation": "WS-ENG-03",
+        "session_id": "SESS-2025-003",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "b8209b9fa88edba3fd71ee8221248ca5fdfc59f2ad7f4cd8ad4758d2f06ae2a5",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_3072"
+    },
+    {
+      "event_id": "EVT-0004",
+      "timestamp_utc": "2025-03-14T04:16:09Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "login",
+      "object": "outlook.exe",
+      "details": {
+        "workstation": "WS-ENG-04",
+        "session_id": "SESS-2025-004",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "68a08bc91a2013033b9b89c81c8fb4d1cab12a12b7adc5f401914ae0ac223460",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_4096"
+    },
+    {
+      "event_id": "EVT-0005",
+      "timestamp_utc": "2025-03-14T04:31:32Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_alice",
+      "action": "login",
+      "object": "teams.exe",
+      "details": {
+        "workstation": "WS-ENG-05",
+        "session_id": "SESS-2025-005",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "7b70d6a0c0338f5a0c04cc4b7f052a542442552f828c1e8f73eaf117cfab94fd",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_5120"
+    },
+    {
+      "event_id": "EVT-0006",
+      "timestamp_utc": "2025-03-14T04:46:55Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-ENG-06",
+        "session_id": "SESS-2025-006",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "9f275fad98282db157a29d7c828453975ae18a2596f861d87db0982aabba3657",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_6144"
+    },
+    {
+      "event_id": "EVT-0007",
+      "timestamp_utc": "2025-03-14T05:02:18Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_copy",
+      "object": "Q1_Roadmap.pptx",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-007",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "4e8dc50c5aaf355f02be04349fa9a1ac248cc4ba7b9a2621f02e0e0564d852b5",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_7168"
+    },
+    {
+      "event_id": "EVT-0008",
+      "timestamp_utc": "2025-03-14T05:17:41Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "router_log",
+      "actor": "svc_backup",
+      "action": "network_conn",
+      "object": "Team_Roster.xlsx",
+      "details": {
+        "workstation": "WS-ENG-08",
+        "session_id": "SESS-2025-008",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "0975d8147e1b05200c20a05d43ff1957b6acfc330dcb15e1c3c6757f34e249e2",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_8192"
+    },
+    {
+      "event_id": "EVT-0009",
+      "timestamp_utc": "2025-03-14T05:33:04Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "process_start",
+      "object": "Client_Notes.docx",
+      "details": {
+        "workstation": "WS-ENG-09",
+        "session_id": "SESS-2025-009",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "a76c0b478fb1f6250407b15e35a6582eefe9dcab2a3c84ee22e68cc2ea1d48b4",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_9216"
+    },
+    {
+      "event_id": "EVT-0010",
+      "timestamp_utc": "2025-03-14T05:48:27Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_alice",
+      "action": "file_copy",
+      "object": "chrome.exe",
+      "details": {
+        "workstation": "WS-ENG-00",
+        "session_id": "SESS-2025-010",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "40076a089c29507074b89023663b96df746dc687d92641c3b36c6a3e4953410f",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_10240"
+    },
+    {
+      "event_id": "EVT-0011",
+      "timestamp_utc": "2025-03-14T06:03:50Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "file_copy",
+      "object": "outlook.exe",
+      "details": {
+        "workstation": "WS-ENG-01",
+        "session_id": "SESS-2025-011",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "5bc2457861b3acd767b78f8d3f7b391c4cec47fb3c642da9a6f2113994dc1cf0",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_11264"
+    },
+    {
+      "event_id": "EVT-0012",
+      "timestamp_utc": "2025-03-14T06:19:13Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "process_start",
+      "object": "teams.exe",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-012",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "1e45d85b70a956166190e8543ee059d9df8c94b88168415eef52ca40dc3a14d8",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_12288"
+    },
+    {
+      "event_id": "EVT-0013",
+      "timestamp_utc": "2025-03-14T06:34:36Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "svc_backup",
+      "action": "file_copy",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-ENG-03",
+        "session_id": "SESS-2025-013",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "577c92ac58f39fc6a52bf878435d3ce9ac6da7b35b9da8bf3b3bc3c1f3862c07",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_13312"
+    },
+    {
+      "event_id": "EVT-0014",
+      "timestamp_utc": "2025-03-14T06:49:59Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "file_copy",
+      "object": "Q1_Roadmap.pptx",
+      "details": {
+        "workstation": "WS-ENG-04",
+        "session_id": "SESS-2025-014",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "6cd82d7e7a7e2669074e6d9fa62cddf4fd2aa3cdeae9d76ddeadd8ed3de1da4c",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_14336"
+    },
+    {
+      "event_id": "EVT-0015",
+      "timestamp_utc": "2025-03-14T07:05:22Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_alice",
+      "action": "process_start",
+      "object": "Team_Roster.xlsx",
+      "details": {
+        "workstation": "WS-ENG-05",
+        "session_id": "SESS-2025-015",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "3fba4963f4f2589f8a3cf52c07ba40437b29584a60e412498d38d5919a8e8621",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_15360"
+    },
+    {
+      "event_id": "EVT-0016",
+      "timestamp_utc": "2025-03-14T07:20:45Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "router_log",
+      "actor": "user_bob",
+      "action": "network_conn",
+      "object": "Client_Notes.docx",
+      "details": {
+        "workstation": "WS-ENG-06",
+        "session_id": "SESS-2025-016",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "abb36b9a30926aa3acc0d0d2b7f6ee5329896807fcfee1ab94922cad3d01cd2b",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_16384"
+    },
+    {
+      "event_id": "EVT-0017",
+      "timestamp_utc": "2025-03-14T07:36:08Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_copy",
+      "object": "chrome.exe",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-017",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "2603c63fe8c68a538647951c74eb0bfa38202885ceb3be3a917e52f3367561d7",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_17408"
+    },
+    {
+      "event_id": "EVT-0018",
+      "timestamp_utc": "2025-03-14T07:51:31Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "svc_backup",
+      "action": "process_start",
+      "object": "outlook.exe",
+      "details": {
+        "workstation": "WS-ENG-08",
+        "session_id": "SESS-2025-018",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "7840668b25ae781a16d6efd776994e76582eec0516274668a304983cd8cd3db5",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_18432"
+    },
+    {
+      "event_id": "EVT-0019",
+      "timestamp_utc": "2025-03-14T08:06:54Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "file_copy",
+      "object": "teams.exe",
+      "details": {
+        "workstation": "WS-ENG-09",
+        "session_id": "SESS-2025-019",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "50aa8be26282620a86e706c44111f22e699755433b4abfbf66aeb19cccec98c0",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_19456"
+    },
+    {
+      "event_id": "EVT-0020",
+      "timestamp_utc": "2025-03-14T08:22:17Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "router_log",
+      "actor": "user_alice",
+      "action": "network_conn",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-ENG-00",
+        "session_id": "SESS-2025-020",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "26333ffd735b4642f4e669155b42d9891c5edeb1bbc78d396e4251d8e61adb5a",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_20480"
+    },
+    {
+      "event_id": "EVT-0021",
+      "timestamp_utc": "2025-03-14T08:37:40Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "process_start",
+      "object": "Q1_Roadmap.pptx",
+      "details": {
+        "workstation": "WS-ENG-01",
+        "session_id": "SESS-2025-021",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "ce05faed1dc25789f44f48a8f7b2feaeb95a1f6aeae5405f36b874e8e95c0f20",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_21504"
+    },
+    {
+      "event_id": "EVT-0022",
+      "timestamp_utc": "2025-03-14T08:53:03Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_copy",
+      "object": "Team_Roster.xlsx",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-022",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "4a27a068b9bff94a305d2f26e0be4ae84a0f9264d76ad6746d61e969c1643c6d",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_22528"
+    },
+    {
+      "event_id": "EVT-0023",
+      "timestamp_utc": "2025-03-14T09:08:26Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "svc_backup",
+      "action": "file_copy",
+      "object": "Client_Notes.docx",
+      "details": {
+        "workstation": "WS-ENG-03",
+        "session_id": "SESS-2025-023",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "34c1d64f5183cf62e01099e0f7fe0cf734cdc5bc5bbe82062526ddb33dada35f",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_23552"
+    },
+    {
+      "event_id": "EVT-0024",
+      "timestamp_utc": "2025-03-14T09:23:49Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "process_start",
+      "object": "chrome.exe",
+      "details": {
+        "workstation": "WS-ENG-04",
+        "session_id": "SESS-2025-024",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "6f9ddce57d3244bf130ba00790539ceadce2bea3dda1c61cfbc4079968e6b4d3",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_24576"
+    },
+    {
+      "event_id": "EVT-0025",
+      "timestamp_utc": "2025-03-14T09:39:12Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_alice",
+      "action": "file_copy",
+      "object": "outlook.exe",
+      "details": {
+        "workstation": "WS-ENG-05",
+        "session_id": "SESS-2025-025",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "239d17aa887e326b1ee4ae86aaa88936b37f3fc536c2768753c728cae85f5777",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_25600"
+    },
+    {
+      "event_id": "EVT-0026",
+      "timestamp_utc": "2025-03-14T09:54:35Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "file_copy",
+      "object": "teams.exe",
+      "details": {
+        "workstation": "WS-ENG-06",
+        "session_id": "SESS-2025-026",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "387e2233e696e79af5eb843c1ffa75e951f82bb04a93450b2383fa3c2918f0fc",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_26624"
+    },
+    {
+      "event_id": "EVT-0027",
+      "timestamp_utc": "2025-03-14T10:09:58Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "process_start",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-027",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "4e979e3218dbcdfbb99f4e5f61df47e1a0aa471d0321b4ace897839b543c41e6",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_27648"
+    },
+    {
+      "event_id": "EVT-0028",
+      "timestamp_utc": "2025-03-14T10:25:21Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "router_log",
+      "actor": "svc_backup",
+      "action": "network_conn",
+      "object": "Q1_Roadmap.pptx",
+      "details": {
+        "workstation": "WS-ENG-08",
+        "session_id": "SESS-2025-028",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "634ddd2598127ed6b4d9aaebcde14e4cbd897c5322fab3686f454c619becf70e",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_28672"
+    },
+    {
+      "event_id": "EVT-0029",
+      "timestamp_utc": "2025-03-14T10:40:44Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "file_copy",
+      "object": "Team_Roster.xlsx",
+      "details": {
+        "workstation": "WS-ENG-09",
+        "session_id": "SESS-2025-029",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "d8a8c6bceada53682d6adb52775157e48ba6ba03b045238f6fb0e2d59cb3782b",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_29696"
+    },
+    {
+      "event_id": "EVT-0030",
+      "timestamp_utc": "2025-03-14T10:56:07Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_alice",
+      "action": "process_start",
+      "object": "Client_Notes.docx",
+      "details": {
+        "workstation": "WS-ENG-00",
+        "session_id": "SESS-2025-030",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "7cbd6adbe4ec84e28cf91c0141aa0da544f9c9cb1f1104d8416fd26e56457cd1",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_30720"
+    },
+    {
+      "event_id": "EVT-0031",
+      "timestamp_utc": "2025-03-14T11:11:30Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "file_copy",
+      "object": "chrome.exe",
+      "details": {
+        "workstation": "WS-ENG-01",
+        "session_id": "SESS-2025-031",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "193c6b5041c729c6f0c4941205ccdfe907f61976eb6de774a9f2e6e09c216991",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_31744"
+    },
+    {
+      "event_id": "EVT-0032",
+      "timestamp_utc": "2025-03-14T11:26:53Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "router_log",
+      "actor": "user_x",
+      "action": "network_conn",
+      "object": "outlook.exe",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-032",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "1bd8c3904ec7069bea72197ca2247e837b452524e60243680800b84277903b92",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_32768"
+    },
+    {
+      "event_id": "EVT-0033",
+      "timestamp_utc": "2025-03-14T11:42:16Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "svc_backup",
+      "action": "process_start",
+      "object": "teams.exe",
+      "details": {
+        "workstation": "WS-ENG-03",
+        "session_id": "SESS-2025-033",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "91eea9c4a6511a658c3a4234118dc71f1cb6b1844c83d42b141b62536d01b79a",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_33792"
+    },
+    {
+      "event_id": "EVT-0034",
+      "timestamp_utc": "2025-03-14T11:57:39Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "file_copy",
+      "object": "excel.exe",
+      "details": {
+        "workstation": "WS-ENG-04",
+        "session_id": "SESS-2025-034",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "20c9391ff842c9a958fde6e6fe686dc55dbd8e0ca2c78971d0c98068fcf16abb",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_34816"
+    },
+    {
+      "event_id": "EVT-0035",
+      "timestamp_utc": "2025-03-14T12:13:02Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_alice",
+      "action": "file_copy",
+      "object": "Q1_Roadmap.pptx",
+      "details": {
+        "workstation": "WS-ENG-05",
+        "session_id": "SESS-2025-035",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "6016f1fdb86da37c62184ee512e0e481cba3bb3d7f76640e2abdd296fdeab87e",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_35840"
+    },
+    {
+      "event_id": "EVT-0036",
+      "timestamp_utc": "2025-03-14T12:28:25Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_bob",
+      "action": "process_start",
+      "object": "Team_Roster.xlsx",
+      "details": {
+        "workstation": "WS-ENG-06",
+        "session_id": "SESS-2025-036",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "a67b82491b63a172b433b068ba2e4f8ec0bad721c50dc7e979e3b1ff573a0109",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_36864"
+    },
+    {
+      "event_id": "EVT-0037",
+      "timestamp_utc": "2025-03-14T12:43:48Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_copy",
+      "object": "Client_Notes.docx",
+      "details": {
+        "workstation": "WS-FIN-04",
+        "session_id": "SESS-2025-037",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "3a63d3c9eb4ea8cb0f4538909d42cbb0246967090a39d7f7f7e43912a203e72b",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_37888"
+    },
+    {
+      "event_id": "EVT-0038",
+      "timestamp_utc": "2025-03-14T12:59:11Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "svc_backup",
+      "action": "file_copy",
+      "object": "chrome.exe",
+      "details": {
+        "workstation": "WS-ENG-08",
+        "session_id": "SESS-2025-038",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "01c20ea3e3329eb8c18a448afbf4b8623a7554c00f7e0d6ac5c70512ea7200bc",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_38912"
+    },
+    {
+      "event_id": "EVT-0039",
+      "timestamp_utc": "2025-03-14T13:14:34Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "sys_admin",
+      "action": "process_start",
+      "object": "outlook.exe",
+      "details": {
+        "workstation": "WS-ENG-09",
+        "session_id": "SESS-2025-039",
+        "status": "SUCCESS"
+      },
+      "evidence_hash": "fad1fecbf0cf47d9d47cb91ff3f1fd0285596763e4c7abf8b6b6d2c590f96fba",
+      "raw_ref": "C:\\\\ForensicEvidence\\\\Images\\\\DiskImage_WS_04.E01:offset_39936"
+    },
+    {
+      "event_id": "EVT-0040",
+      "timestamp_utc": "2025-03-14T16:55:12Z",
+      "clock_uncertainty_sec": 1.0,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "login",
+      "object": "WS-FIN-04",
+      "details": {
+        "logon_type": 10,
+        "source_ip": "198.51.100.44",
+        "domain": "FIN_CORP",
+        "client_name": "REMOTE-HOST-UKN",
+        "auth_package": "Negotiate"
+      },
+      "evidence_hash": "bc6acf550d60a6e262bdd5f29ac7b331a26e7f8b33229617a42a8e4c331a9f76",
+      "raw_ref": "Security.evtx:EventID_4624:RecordNumber_108420"
+    },
+    {
+      "event_id": "EVT-0041",
+      "timestamp_utc": "2025-03-14T16:55:20Z",
+      "clock_uncertainty_sec": 0.2,
+      "source": "router_log",
+      "actor": "network_gateway",
+      "action": "network_conn",
+      "object": "198.51.100.44:54210 -> 10.0.1.45:3389",
+      "details": {
+        "protocol": "TCP",
+        "bytes_in": 4280120,
+        "bytes_out": 1521400,
+        "firewall_rule": "INBOUND_RDP_NAT_PERMIT"
+      },
+      "evidence_hash": "93446ade3f4aa4a8076c28f009d8882344a4c8f1b69cd60ffb9b73d5eb185c98",
+      "raw_ref": "firewall_syslog_20250314.log:Line_45210"
+    },
+    {
+      "event_id": "EVT-0042",
+      "timestamp_utc": "2025-03-14T16:55:37Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "process_start",
+      "object": "C:\\\\Windows\\\\System32\\\\termsvcs.dll",
+      "details": {
+        "parent_process": "svchost.exe",
+        "pid": 3144
+      },
+      "evidence_hash": "b89fd6a30be179f5f13f83eb8dda8edd31b35853ad3b34e528c7733bc60cce8c",
+      "raw_ref": "Security.evtx:EventID_4688:RecordNumber_108425"
+    },
+    {
+      "event_id": "EVT-0043",
+      "timestamp_utc": "2025-03-14T16:58:04Z",
+      "clock_uncertainty_sec": 1.0,
+      "source": "usb_log",
+      "actor": "user_x",
+      "action": "usb_connect",
+      "object": "SanDisk Ultra USB 3.0 (VID_0781&PID_5581)",
+      "details": {
+        "serial_number": "4C530001280424107192",
+        "drive_letter": "E:",
+        "filesystem": "NTFS",
+        "capacity_gb": 64
+      },
+      "evidence_hash": "48a4e302ca6ec6cae3e48d87f62da3bf8a0a4c8a6b448f15887c3df50a462e9c",
+      "raw_ref": "SYSTEM_registry_hives\\\\USBSTOR:Serial_4C530001280424107192"
+    },
+    {
+      "event_id": "EVT-0044",
+      "timestamp_utc": "2025-03-14T16:58:19Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "SYSTEM",
+      "action": "other",
+      "object": "Volume E: Mounted",
+      "details": {
+        "guid": "{a43d4c38-0000-0000-0000-100000000000}"
+      },
+      "evidence_hash": "9df90ff933840040f44bf099421441f8cb5bd21554d0ecf8e4e103e8416e0bb1",
+      "raw_ref": "Microsoft-Windows-Storage-ClassPnP/Operational:EventID_507"
+    },
+    {
+      "event_id": "EVT-0045",
+      "timestamp_utc": "2025-03-14T17:00:00Z",
+      "clock_uncertainty_sec": 0.0,
+      "source": "windows_security_log",
+      "actor": "SYSTEM",
+      "action": "scheduled_task",
+      "object": "\\\\Microsoft\\\\EnterpriseBackup\\\\DailyArchiveJob",
+      "details": {
+        "task_name": "DailyArchiveJob",
+        "action_exec": "C:\\\\Scripts\\\\backup_sync.ps1 -Target AutoRemovable",
+        "trigger": "Daily at 22:30 IST",
+        "exit_code": 0
+      },
+      "evidence_hash": "67edd31abe99d3e5c54f15096cd96daf0116d2936ade71e522abc3aca7284b1a",
+      "raw_ref": "Microsoft-Windows-TaskScheduler/Operational:EventID_102:Task_DailyArchiveJob"
+    },
+    {
+      "event_id": "EVT-0046",
+      "timestamp_utc": "2025-03-14T17:00:12Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "SYSTEM",
+      "action": "process_start",
+      "object": "powershell.exe -NonInteractive -ExecutionPolicy Bypass -File C:\\\\Scripts\\\\backup_sync.ps1",
+      "details": {
+        "parent_process": "taskeng.exe",
+        "pid": 5820
+      },
+      "evidence_hash": "c226901c21296aed605e9a066c2ca2d3b54fdcabdb11b5e0a1b299b1430499d4",
+      "raw_ref": "Security.evtx:EventID_4688:RecordNumber_108442"
+    },
+    {
+      "event_id": "EVT-0047",
+      "timestamp_utc": "2025-03-14T17:02:18Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_copy",
+      "object": "Quarterly_Financials.xlsx",
+      "details": {
+        "source_path": "C:\\\\Users\\\\user_x\\\\Documents\\\\Financials\\\\Quarterly_Financials.xlsx",
+        "destination_path": "E:\\\\Backups\\\\Quarterly_Financials.xlsx",
+        "bytes_transferred": 14852910,
+        "sha256": "a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+      },
+      "evidence_hash": "40db4802b05897df3ee03f44e120efdb2cdf11fc957e4db8b9eccc3455148176",
+      "raw_ref": "Security.evtx:EventID_4663:Object_Quarterly_Financials.xlsx:RecordNumber_108450"
+    },
+    {
+      "event_id": "EVT-0048",
+      "timestamp_utc": "2025-03-14T17:02:40Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_copy",
+      "object": "Salary_Structure_2025.xlsx",
+      "details": {
+        "source_path": "C:\\\\Users\\\\user_x\\\\Documents\\\\HR\\\\Salary_Structure_2025.xlsx",
+        "destination_path": "E:\\\\Backups\\\\Salary_Structure_2025.xlsx",
+        "bytes_transferred": 3491200
+      },
+      "evidence_hash": "4a466025ef8307465f941e794176882263d2dca26364e75f698528df39220ccb",
+      "raw_ref": "Security.evtx:EventID_4663:Object_Salary_Structure_2025.xlsx:RecordNumber_108455"
+    },
+    {
+      "event_id": "EVT-0049",
+      "timestamp_utc": "2025-03-14T17:05:41Z",
+      "clock_uncertainty_sec": 0.0,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "file_delete",
+      "object": "C:\\\\Windows\\\\System32\\\\Winevt\\\\Logs\\\\Security.evtx",
+      "details": {
+        "audit_log_cleared": true,
+        "event_id_cleared": 1102,
+        "subject_user_name": "user_x",
+        "subject_domain_name": "FIN_CORP"
+      },
+      "evidence_hash": "801a417e9640fede2488220cc71a318405ad9542efeadde50781b7218620c713",
+      "raw_ref": "Security.evtx:EventID_1102:LogClearedNotification"
+    },
+    {
+      "event_id": "EVT-0050",
+      "timestamp_utc": "2025-03-14T17:05:43Z",
+      "clock_uncertainty_sec": 0.5,
+      "source": "windows_security_log",
+      "actor": "user_x",
+      "action": "process_start",
+      "object": "wevtutil.exe cl Security",
+      "details": {
+        "parent_process": "cmd.exe",
+        "pid": 7812
+      },
+      "evidence_hash": "4fc83aebe4d41124017ba4f1e8e1b95a0f924dc78441ab2184a5589205d9a3ca",
+      "raw_ref": "Security.evtx:EventID_4688:RecordNumber_108460"
+    },
+    {
+      "event_id": "EVT-0051",
+      "timestamp_utc": "2025-03-14T17:10:41Z",
+      "clock_uncertainty_sec": 2.0,
+      "source": "cctv",
+      "actor": "unknown_person",
+      "action": "other",
+      "object": "Camera 4 - 2nd Floor Finance Bay",
+      "details": {
+        "motion_detected": true,
+        "badge_swiped": null,
+        "lighting": "dimmed"
+      },
+      "evidence_hash": "f98861a337bfffeb5341b3265b59065dc99046884ac49018f4c5a7d8b87a4e32",
+      "raw_ref": "CCTV_NVR_Channel04_20250314_2240.mp4:frame_1420"
+    },
+    {
+      "event_id": "EVT-0052",
+      "timestamp_utc": "2025-03-14T17:13:41Z",
+      "clock_uncertainty_sec": 1.0,
+      "source": "usb_log",
+      "actor": "user_x",
+      "action": "other",
+      "object": "SanDisk Ultra USB 3.0 Disconnected",
+      "details": {
+        "serial_number": "4C530001280424107192"
+      },
+      "evidence_hash": "35d3cc42d54629d42ea716f97e99ba72efe5807f00c7692e5953680c35f1af9e",
+      "raw_ref": "SYSTEM_registry_hives\\\\USBSTOR:Removal"
+    },
+    {
+      "event_id": "EVT-0053",
+      "timestamp_utc": "2025-03-14T17:15:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "system_daemon",
+      "action": "scheduled_task",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 53
+      },
+      "evidence_hash": "1736896a9c85e85ac6cf978c427ed81e2c1d26ba9dac01a3891d76b22502065c",
+      "raw_ref": "syslog:offset_26500"
+    },
+    {
+      "event_id": "EVT-0054",
+      "timestamp_utc": "2025-03-14T17:25:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "system_daemon",
+      "action": "network_conn",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 54
+      },
+      "evidence_hash": "3224241d10567dbfe0fb0bda8e2210e0d8bcf9c0bbf448027b7f9da3c8260a93",
+      "raw_ref": "syslog:offset_27000"
+    },
+    {
+      "event_id": "EVT-0055",
+      "timestamp_utc": "2025-03-14T17:35:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "system_daemon",
+      "action": "scheduled_task",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 55
+      },
+      "evidence_hash": "a0aa4d9874601f65d79ab8d1cc26e3f5a2a496223bcec64277aa070c967ed3bb",
+      "raw_ref": "syslog:offset_27500"
+    },
+    {
+      "event_id": "EVT-0056",
+      "timestamp_utc": "2025-03-14T17:45:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "system_daemon",
+      "action": "network_conn",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 56
+      },
+      "evidence_hash": "6f4e7a350657d6cf76e9b809340a75bf30c52b6d84ec18930d6fd106fb30cae2",
+      "raw_ref": "syslog:offset_28000"
+    },
+    {
+      "event_id": "EVT-0057",
+      "timestamp_utc": "2025-03-14T17:55:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "system_daemon",
+      "action": "scheduled_task",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 57
+      },
+      "evidence_hash": "f74b383fdd8a12f4288035e1f40c4fac7e05c04d80cee0fb7e8cd8c08a73a38f",
+      "raw_ref": "syslog:offset_28500"
+    },
+    {
+      "event_id": "EVT-0058",
+      "timestamp_utc": "2025-03-14T18:05:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "system_daemon",
+      "action": "network_conn",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 58
+      },
+      "evidence_hash": "9feacd7a5d9834620d12e64bff432826dc7201e2df559e73c06a190dbfc7fd72",
+      "raw_ref": "syslog:offset_29000"
+    },
+    {
+      "event_id": "EVT-0059",
+      "timestamp_utc": "2025-03-14T18:15:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "windows_security_log",
+      "actor": "system_daemon",
+      "action": "scheduled_task",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 59
+      },
+      "evidence_hash": "ed98d9dd58eeeab72242ecdb9da2fd4445b81b2d2e0c6e6e9b6a73059172e371",
+      "raw_ref": "syslog:offset_29500"
+    },
+    {
+      "event_id": "EVT-0060",
+      "timestamp_utc": "2025-03-14T18:25:41Z",
+      "clock_uncertainty_sec": 0.1,
+      "source": "router_log",
+      "actor": "system_daemon",
+      "action": "network_conn",
+      "object": "NTP_Sync / DNS_Probe",
+      "details": {
+        "status": "OK",
+        "heartbeat_index": 60
+      },
+      "evidence_hash": "337f9efcd92d7a64392a089911197baa742b47c985985f75abec4fc901296b12",
+      "raw_ref": "syslog:offset_30000"
+    }
+  ]
+}

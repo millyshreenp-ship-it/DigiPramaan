@@ -1,0 +1,36 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy dependency requirements
+COPY backend/ backend/
+COPY sample_data/ sample_data/
+COPY scripts/ scripts/
+COPY tests/ tests/
+COPY frontend/dist/ frontend/dist/
+COPY demo.py pytest.ini ./
+
+# Install python dependencies
+RUN pip install --no-cache-dir \
+    fastapi==0.115.6 \
+    uvicorn==0.34.0 \
+    pydantic==2.10.4 \
+    scikit-learn==1.6.0 \
+    pandas==2.2.3 \
+    pyyaml==6.0.2 \
+    requests==2.32.3 \
+    httpx==0.28.1 \
+    pytest==8.3.4
+
+ENV PYTHONUNBUFFERED=1
+ENV LLM_PROVIDER=mock
+ENV ZERO_EGRESS=true
+
+EXPOSE 8000
+
+CMD ["python", "demo.py"]
